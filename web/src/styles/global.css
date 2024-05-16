@@ -2,4 +2,32 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+
+  font-size: 1.6rem;
+
+  font-family: "Cabin", sans-serif;
+  font-weight: 400;
+
+  color: var(--primary-text-color);
+}
+
+
+button {
+  transition: 200ms;
+  cursor: pointer;
+}
+button:hover {
+  opacity: 0.7;
+}
+
+:root {
+  font-size: 62.5%;
+
+  --primary-text-color: #64676C;
+  --secondary-text-color: #7A7D81;
+  --white: #ffffff;
+  --gray: #D5D5D5;
+  --light-gray: #D9D9D9;
+  --borders-color: var(--secondary-text-color);
+  --green: #069E8C;
 }
