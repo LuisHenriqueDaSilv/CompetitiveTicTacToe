@@ -1,0 +1,12 @@
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: dockerfile
+    container_name: competitive_tic_tac_toe_backend
+    volumes:
+      - .:/app
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - .env
