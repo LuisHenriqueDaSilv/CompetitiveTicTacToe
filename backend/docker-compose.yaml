@@ -3,10 +3,32 @@ services:
     build: 
       context: .
       dockerfile: dockerfile
-    container_name: competitive_tic_tac_toe_backend
+    container_name: competitive_tictactoe_backend
     volumes:
       - .:/app
     ports:
       - ${PORT}:${PORT}
     env_file:
       - .env
+    networks:
+      - app
+  database:
+    image: postgres
+    container_name: competitive_tictactoe_database
+    networks:
+      - app
+    env_file:
+      - .env
+    ports:
+      - ${DATABASE_PORT}:5432
+    volumes:
+      - type: volume
+        source: database_data 
+        target: /var/lib/postgresql/data
+
+networks:
+  app:
+
+volumes:
+  database_data:
+    name: database_data

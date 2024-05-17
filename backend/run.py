@@ -2,9 +2,12 @@ import uvicorn
 from dotenv import load_dotenv
 import os
 
-from src import app
-
-load_dotenv()
+load_dotenv('.env')
 PORT = os.environ.get("PORT", 3003)
+DEBUG = os.environ.get("DEBUG", False)
 if __name__ == "__main__":
-  uvicorn.run(app, host="0.0.0.0", port=int(PORT))
+  uvicorn.run("src:app",
+              host="0.0.0.0", 
+              port=int(PORT),
+              reload=DEBUG
+              )
