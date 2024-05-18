@@ -37,7 +37,7 @@ class UserUseCases:
   def user_login(self, user: UserSchema):
     user_on_db:UserSchema = self.db_session.query(UserModel).filter_by(username=user.username).first()
     
-    if not user_on_db:
+    if user_on_db is None:
       raise HTTPException(
         detail="Invalid username or password",
         status_code=status.HTTP_401_UNAUTHORIZED
