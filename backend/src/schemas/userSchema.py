@@ -13,7 +13,7 @@ def form_body(cls):
     return cls
 
 @form_body
-class User(BaseModel):
+class UserSchema(BaseModel):
   username: str = Form(...)
   password: str = Form(...)
   

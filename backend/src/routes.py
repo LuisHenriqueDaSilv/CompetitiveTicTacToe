@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse 
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from .depends import get_db_session
-from .schemas.userSchema import User
+from .schemas.userSchema import UserSchema
 
 from .useCases import UserUseCases
 
@@ -17,16 +18,30 @@ def health_check() -> JSONResponse:
   )
 
 @router.post("/user/register")
-async def user_register(
-  userData: User=Depends(User),
+def user_register(
+  userData: UserSchema=Depends(UserSchema),
   db_session:Session=Depends(get_db_session)
 ) -> JSONResponse:
-  # user = await form_data.f.read()
   userUseCase = UserUseCases(db_session=db_session)
-  userUseCase.user_register(userData)
+  authorization_data = userUseCase.user_register(userData)
   
   return JSONResponse(
-    content={"msg":"succes"},
+    content={
+      "msg":"succes",
+      "authorization": authorization_data
+    },
     status_code=status.HTTP_201_CREATED
   )
   
+@router.post("/user/login")
+def user_login(
+  userData: UserSchema=Depends(UserSchema),
+  db_session: Session=Depends(get_db_session)
+) -> JSONResponse:
+  userUseCase= UserUseCases(db_session=db_session)
+  authorization_data = userUseCase.user_login(userData)
+  
+  return JSONResponse(
+    content=authorization_data,
+    status_code=status.HTTP_200_OK
+  )
