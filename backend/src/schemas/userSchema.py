@@ -5,10 +5,10 @@ from pydantic import BaseModel, field_validator
 
 def form_body(cls):
     cls.__signature__ = cls.__signature__.replace(
-        parameters=[
-            arg.replace(default=Form(...))
-            for arg in cls.__signature__.parameters.values()
-        ]
+      parameters=[
+        arg.replace(default=Form(...))
+        for arg in cls.__signature__.parameters.values()
+      ]
     )
     return cls
 
@@ -18,7 +18,8 @@ class UserSchema(BaseModel):
   password: str = Form(...)
   
   @field_validator("username")
-  def validate_username(cls, value):
+  @staticmethod
+  def validate_username(value):
     if not re.match("^([a-z]|[A-Z]|[0-9])+$", value) or len(value) > 10:
       raise HTTPException(
         detail="Username format invalid",

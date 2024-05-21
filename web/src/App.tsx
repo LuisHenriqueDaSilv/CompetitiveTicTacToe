@@ -1,16 +1,26 @@
-import MedalIcon from './assets/medal.svg'
+import {useContext} from 'react'
+import {GameSocketContext} from './contexts/gameSocketContext'
+
+import GameBoard from './components/GameBoard'
+
+// Icons:
 import TrophyIcon from './assets/trophy.svg'
 import ExitIcon from './assets/exit.svg'
 import EditIcon from './assets/edit.svg'
 import PlayIcon from './assets/play.svg'
-// import  from './assets/.svg'
 
 import styles from './styles/appStyles.module.scss'
+import FindMatchMenu from './components/FindMatchMenu'
 
 
 export default function App(){
 
-  const gameData = ['x','0',' ',' ',' ',' ',' ',' ',' ',]
+  const {
+    inMatch,
+    matchmode,
+    setMatchmode
+  } = useContext(GameSocketContext)
+
 
   return (
     <div className={styles.appWrapper}>
@@ -21,62 +31,26 @@ export default function App(){
             <h1>Jogo da velha</h1>
           </header>
 
-          <div className={styles.gameContainer}>
+          {
+            inMatch? <GameBoard/>:<FindMatchMenu/>
+          }
 
-            <aside className={styles.playersInfosContainer}>
-              <section className={styles.playerInfos}>
-                <p>xxxxxxxxxx</p>
-                <div>
-                  <p>xx</p>
-                  <img src={MedalIcon}/>
-                </div>
-              </section>
-              <span>VS</span>
-              <section className={styles.playerInfos}>
-                <p>xxxxxxxxxx</p>
-                <div>
-                  <p>xx</p>
-                  <img src={MedalIcon}/>
-                </div>
-              </section>
-            </aside>
-
-            <div className={styles.game}>
-              {
-                gameData.map((field, index) => {
-                  const firstColumnIndex = [0, 3, 6]
-                  const lastColumnIndex = [2, 5, 8]
-                  const firstRowIndex = [0, 1, 2]
-                  const lastRowIndex = [6, 7, 8]
-                  return (
-                    <button 
-                      className={`
-                        ${firstRowIndex.includes(index)? styles.firstRowButton:""}
-                        ${lastColumnIndex.includes(index)? styles.lastColumnButton:""}
-                        ${lastRowIndex.includes(index)? styles.lastRowButton:""}
-                        ${firstColumnIndex.includes(index)? styles.firstColumnButton:""}
-                      `}
-                    >
-                      {field != ' '? (
-                        <img src={field == 'x'? "/cross.png":"/circle.png"}/>
-                      ): null}
-                    </button>
-                  )
-                })
-              }
-
-            </div>
-
-          </div>
         </div>
+          
 
         <aside className={styles.menu}>
           <section className={styles.gameModeSection}>
             <h1>modo de jogo</h1>
-            <button>
+            <button 
+              id={matchmode=='multiplayer'? styles.selectedModeButton:""} 
+              onClick={() => setMatchmode('multiplayer')}
+            >
               multijogador
             </button>
-            <button id={styles.selectedModeButton}>
+            <button 
+              id={matchmode=='algoritmo'? styles.selectedModeButton:""} 
+              onClick={() => setMatchmode('algoritmo')}
+            >
               algoritmo
             </button>
           </section>

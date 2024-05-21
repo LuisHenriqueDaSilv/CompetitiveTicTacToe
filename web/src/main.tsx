@@ -4,12 +4,12 @@ import App from './App.tsx'
 
 import './styles/global.css'
 
-import {SocketContextProvider} from "./contexts/socketContext.tsx" 
+import {GameSocketProvider} from "./contexts/gameSocketContext.tsx" 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <SocketContextProvider>
+    <GameSocketProvider>
       <App/>
-    </SocketContextProvider>
+    </GameSocketProvider>
   </React.StrictMode>,
 )

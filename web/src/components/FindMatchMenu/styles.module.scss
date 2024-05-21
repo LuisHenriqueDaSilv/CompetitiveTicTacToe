@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 40%;
+  gap: 3rem;
+
+  p {
+    color: var(--white);
+    font-size: 3rem;
+    text-align: center;
+  }
+
+  button {
+    padding: 2rem 4rem;
+    border: 2px solid #00000020;
+    background-color: var(--green);
+    color: var(--white);
+    border-radius: 10px;
+    font-size: 2rem;
+  }
+}
