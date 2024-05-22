@@ -10,15 +10,15 @@ import EditIcon from './assets/edit.svg'
 import PlayIcon from './assets/play.svg'
 
 import styles from './styles/appStyles.module.scss'
-import FindMatchMenu from './components/FindMatchMenu'
+import FindGameMenu from './components/FindGameMenu'
 
 
 export default function App(){
 
   const {
-    inMatch,
-    matchmode,
-    setMatchmode
+    inGame,
+    gamemode,
+    setGamemode
   } = useContext(GameSocketContext)
 
 
@@ -32,7 +32,7 @@ export default function App(){
           </header>
 
           {
-            inMatch? <GameBoard/>:<FindMatchMenu/>
+            inGame? <GameBoard/>:<FindGameMenu/>
           }
 
         </div>
@@ -42,14 +42,14 @@ export default function App(){
           <section className={styles.gameModeSection}>
             <h1>modo de jogo</h1>
             <button 
-              id={matchmode=='multiplayer'? styles.selectedModeButton:""} 
-              onClick={() => setMatchmode('multiplayer')}
+              id={gamemode=='multiplayer'? styles.selectedModeButton:""} 
+              onClick={() => setGamemode('multiplayer')}
             >
               multijogador
             </button>
             <button 
-              id={matchmode=='algoritmo'? styles.selectedModeButton:""} 
-              onClick={() => setMatchmode('algoritmo')}
+              id={gamemode=='algoritmo'? styles.selectedModeButton:""} 
+              onClick={() => setGamemode('algoritmo')}
             >
               algoritmo
             </button>

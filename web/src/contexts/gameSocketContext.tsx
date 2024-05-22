@@ -6,15 +6,16 @@ interface socketContextProviderParamsInterface {
   children: ReactNode
 }
 interface socketContextProviderValuesInterface {
-  inMatch: boolean,
-  setMatchmode: (mode: "multiplayer" | "algoritmo") => void,
-  matchmode: "multiplayer" | "algoritmo",
-  matchdata: string[],
-  findMatch: () => void,
-  submitMove: (matchId: number) => void
+  inGame: boolean,
+  setGamemode: (mode: "multiplayer" | "algoritmo") => void,
+  gamemode: "multiplayer" | "algoritmo",
+  gamedata: string[],
+  findGame: () => void,
+  submitMove: (GameId: number) => void,
+  isMyTurn: boolean
 }
 
-interface matchInfosInterface {
+interface gameInfosInterface {
   id: number,
   mode: "multiplayer" | "algoritmo",
   oponent: {
@@ -24,40 +25,67 @@ interface matchInfosInterface {
   }
 }
 
-interface newMatchDataInterface {
+interface newGameDataInterface {
   data: "",
-  matchInfos: matchInfosInterface
+  gameInfos: gameInfosInterface
+}
+
+interface newMoveDataInterface {
+  new_data: ""
 }
 
 export const GameSocketContext = createContext({} as socketContextProviderValuesInterface)
 
 export function GameSocketProvider({ children }: socketContextProviderParamsInterface) {
   const [isConnected, setIsConnected] = useState<boolean>(socketClient.connected);
-  const [inMatch, setInMatch] = useState<boolean>(false)
-  const [matchmode, setMatchmode] = useState<"multiplayer" | "algoritmo">("algoritmo")
-  const [findingMatch, setFindingMatch] = useState<boolean>(false)
-  const [matchdata, setMatchdata] = useState<string[]>([])
-  const [matchInfos, setMatchInfos] = useState<matchInfosInterface>()
+  const [inGame, setInGame] = useState<boolean>(false)
+  const [gamemode, setGamemode] = useState<"multiplayer" | "algoritmo">("algoritmo")
+  const [findingGame, setFindingGame] = useState<boolean>(false)
+  const [gamedata, setGamedata] = useState<string[]>([])
+  const [gameInfos, setGameInfos] = useState<gameInfosInterface>()
+  const [isMyTurn, setIsMyTurn] = useState<boolean>(true)
+  const [socket, setSocket] = useState<any>()
 
-  function findMatch() {
-    setFindingMatch(true);
-    socketClient.emit("searching_new_match", {
-      matchmode: matchmode
+  function findGame() {
+    setFindingGame(true);
+    socketClient.emit("searching_new_game", {
+      gamemode
     })
   }
   function submitMove(position: number) {
-    if(!inMatch || !matchInfos){
+
+    if (!inGame || !gameInfos) {
       return alert("Algo de inesperado ocorreu")
     }
     socketClient.emit("move", {
-      matchId: matchInfos.id,
+      gameId: gameInfos.id,
       position
     })
+
+    const gameDataClone = [...gamedata]
+    gameDataClone[position] = "x"
+    setGamedata(gameDataClone)
+    setIsMyTurn(false)
   }
+
+  useEffect(() => {
+    function onNewMove(data: newMoveDataInterface) {
+      setTimeout(() => {
+        setGamedata(data.new_data.split(""))
+        setIsMyTurn(true)
+      }, gameInfos?.mode == "algoritmo" ? 1000 : 0)
+    }
+
+    socket?.on("new_move", onNewMove)
+    return () => {
+      socket?.off("new_move", onNewMove)
+    }
+  }, [gameInfos, gamedata, socket])
 
   useEffect(() => {
 
     socketClient.connect()
+    setSocket(socketClient)
 
     function onConnect() {
       setIsConnected(true);
@@ -68,34 +96,35 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
     function onBad(data: string) {
       alert(data)
     }
-    function onNewMatch(data: newMatchDataInterface) {
-      setInMatch(true)
-      setMatchdata(data.data.split(""))
-      setMatchInfos(data.matchInfos)
-      setFindingMatch(false)
+    function onNewGame(data: newGameDataInterface) {
+      setInGame(true)
+      setGamedata(data.data.split(""))
+      setGameInfos(data.gameInfos)
+      setFindingGame(false)
     }
 
     socketClient.on("connect", onConnect)
     socketClient.on("disconnect", onDisconnect)
     socketClient.on("bad", onBad)
-    socketClient.on("new_match", onNewMatch)
+    socketClient.on("new_game", onNewGame)
 
     return () => {
       socketClient.off("connect", onConnect)
       socketClient.off("disconnect", onDisconnect)
       socketClient.off("bad", onBad)
-      socketClient.off("new_match", onNewMatch)
+      socketClient.off("new_game", onNewGame)
     }
   }, [])
 
   return (
     <GameSocketContext.Provider value={{
-      inMatch,
-      matchmode,
-      setMatchmode,
-      matchdata,
-      findMatch,
-      submitMove
+      inGame,
+      gamemode,
+      setGamemode,
+      gamedata,
+      findGame,
+      submitMove,
+      isMyTurn
     }}>
       {children}
     </GameSocketContext.Provider>

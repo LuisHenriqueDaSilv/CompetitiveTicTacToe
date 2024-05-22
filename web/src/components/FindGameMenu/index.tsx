@@ -7,7 +7,7 @@ export default function FindMatchMenu (){
 
   const {
     gamemode,
-    findMatch
+    findGame
   } = useContext(GameSocketContext)
 
   return (
@@ -17,7 +17,7 @@ export default function FindMatchMenu (){
           <p>Conecte-se a uma partida no modo {gamemode}!</p>
         )
       }
-      <button onClick={findMatch}>Buscar partida</button>
+      <button onClick={findGame}>Buscar partida</button>
     </div>
   )
 }
