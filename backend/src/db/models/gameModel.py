@@ -2,8 +2,8 @@ from sqlalchemy import String, Integer, Column
 
 from src.db.base import Base
 
-class MatchModel(Base):
-  __tablename__ = "matchs"
+class GameModel(Base):
+  __tablename__ = "games"
   id = Column("id", Integer, primary_key=True, unique=True, autoincrement=True, nullable=False )
   player1_id = Column("player1_id", Integer, nullable=True)
   player1_sid = Column("player1_sid", String, nullable=False)

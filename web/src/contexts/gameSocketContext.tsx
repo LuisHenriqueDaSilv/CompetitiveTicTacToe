@@ -52,6 +52,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
       gamemode
     })
   }
+
   function submitMove(position: number) {
 
     if (!inGame || !gameInfos) {
@@ -83,10 +84,8 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
   }, [gameInfos, gamedata, socket])
 
   useEffect(() => {
-
     socketClient.connect()
     setSocket(socketClient)
-
     function onConnect() {
       setIsConnected(true);
     }
@@ -102,17 +101,22 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
       setGameInfos(data.gameInfos)
       setFindingGame(false)
     }
-
+    function onWin() {
+      alert("Ganhador")
+    }
+    
     socketClient.on("connect", onConnect)
     socketClient.on("disconnect", onDisconnect)
     socketClient.on("bad", onBad)
     socketClient.on("new_game", onNewGame)
+    socketClient.on("win", onWin)
 
     return () => {
       socketClient.off("connect", onConnect)
       socketClient.off("disconnect", onDisconnect)
       socketClient.off("bad", onBad)
       socketClient.off("new_game", onNewGame)
+      socketClient.off("win", onWin)
     }
   }, [])
 
