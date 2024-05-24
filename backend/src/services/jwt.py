@@ -11,7 +11,7 @@ from src.db.models import UserModel
 JWT_SECRET = dotenv_values().get("JWT_SECRET")
 JWT_ALGORITHM = dotenv_values().get("JWT_ALGORITHM")
 
-oauth_scheme = OAuth2PasswordBearer(tokenUrl='/user/login')
+oauth_scheme = OAuth2PasswordBearer(tokenUrl='/usuario/login')
 
 class JWTService():
 
@@ -38,7 +38,7 @@ class JWTService():
       data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except JWTError:
       raise HTTPException(
-        detail="Invalid token",
+        detail="token invalido",
         status_code=status.HTTP_401_UNAUTHORIZED
       )
       
@@ -46,7 +46,7 @@ class JWTService():
     
     if user_on_db is None:
       raise HTTPException(
-        detail="Invalid token",
+        detail="token invalido",
         status_code=status.HTTP_401_UNAUTHORIZED
       )
 

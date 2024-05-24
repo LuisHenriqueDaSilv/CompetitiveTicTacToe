@@ -7,17 +7,17 @@ from .schemas.userSchema import UserSchema
 from .services import JWTService
 from .useCases import UserUseCases
 
-user_router = APIRouter(prefix="/user")
-authenticated_router = APIRouter(dependencies=[Depends(JWTService.token_verifier)])
+authentication_router = APIRouter(prefix="/autenticacao")
+authenticated_router = APIRouter(dependencies=[Depends(JWTService.token_verifier)], prefix="/autenticado")
 
-@user_router.get("/")
+@authentication_router.get("/")
 def health_check() -> JSONResponse:
   return JSONResponse(
     content={"msg":"hello world"},
     status_code=status.HTTP_200_OK
   )
 
-@user_router.post("/register")
+@authentication_router.post("/registro")
 def user_register(
   userData: UserSchema=Depends(UserSchema),
   db_session:Session=Depends(get_db_session)
@@ -27,13 +27,13 @@ def user_register(
   
   return JSONResponse(
     content={
-      "detail":"succes",
+      "detail":"sucesso",
       "authorization": authorization_data
     },
     status_code=status.HTTP_201_CREATED
   )
   
-@user_router.post("/login")
+@authentication_router.post("/login")
 def user_login(
   userData: UserSchema=Depends(UserSchema),
   db_session: Session=Depends(get_db_session)
@@ -46,13 +46,13 @@ def user_login(
     status_code=status.HTTP_200_OK
   )
   
-@authenticated_router.get("/authorization-test")
+@authenticated_router.get("/teste")
 def user_authorization_test(
   request:Request
 ) -> JSONResponse:
   return JSONResponse(
     content={
-      "detail":"authorizated",
+      "detail":"autenticado",
       "username": request.state.user.username
     },
     status_code=status.HTTP_200_OK

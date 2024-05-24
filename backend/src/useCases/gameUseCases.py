@@ -27,7 +27,7 @@ class GameUseCases():
         self.db_session.add(created_game)
         self.db_session.commit()
       except:
-        await self.sio.emit("bad", "database error", to=sid)
+        await self.sio.emit("bad", "erro no banco de dados", to=sid)
         
       self.game_memory.players_in_game[sid] = {
         "sid":sid
@@ -40,12 +40,10 @@ class GameUseCases():
           "oponent": {
             "id": None,
             "username": None,
-            "type": "algorithm"
+            "type": "algoritmo"
           }
         }
       }, to=sid)
-  
-  
   
   def algorithm_random_position(self, game: GameModel):
     game_positions = [a for a in game.data]
@@ -67,7 +65,7 @@ class GameUseCases():
     try: 
       self.db_session.commit()
     except: 
-        await self.sio.emit("bad", "database error", to=sid)
+        await self.sio.emit("bad", "erro no banco de dados", to=sid)
     
     await self.sio.emit(
       "new_move",
@@ -103,10 +101,10 @@ class GameUseCases():
       game_id = int(game_id)
       position = int(position)
     except ValueError:
-      return await self.sio.emit("bad", "invalid position or gameId", to=sid)
+      return await self.sio.emit("bad", "id de partida ou posição invalida", to=sid)
     
     if position is None or (position < 0 or position > 9):
-      return await self.sio.emit("bad", "Invalid position", to=sid)
+      return await self.sio.emit("bad", "posição invalida", to=sid)
     
     game_on_db = self.db_session.query(GameModel)\
       .filter(GameModel.status=="RUN")\
@@ -115,13 +113,13 @@ class GameUseCases():
       .first()
       
     if game_on_db is None:
-      return await self.sio.emit("bad", "invalid game id", to=sid)
+      return await self.sio.emit("bad", "id de partida invalida", to=sid)
     if (sid == game_on_db.player1_sid and game_on_db.current != "x") or (sid == game_on_db.player2_sid and game_on_db.current != "o"):
-      return await self.sio.emit("bad", "Its not your turn", to=sid)
+      return await self.sio.emit("bad", "Não é a sua vez de jogar", to=sid)
     
     game_data = list(game_on_db.data)
     if game_data[position] != " ":
-      return await self.sio.emit("bad", "invalid position", to=sid)
+      return await self.sio.emit("bad", "posição invalida", to=sid)
     
     game_data[position] = game_on_db.current
     new_game_data = ''.join(game_data)
@@ -131,7 +129,7 @@ class GameUseCases():
     try: 
       self.db_session.commit()
     except: 
-        await self.sio.emit("bad", "database error", to=sid)
+        await self.sio.emit("bad", "erro no banco de dados", to=sid)
     
     if game_on_db.mode == "algoritmo":
       await self.algorithm_move(game_on_db, sid)
@@ -147,7 +145,8 @@ class GameUseCases():
       self.db_session.delete(game)
       self.db_session.commit()
     except:
-      print("Algo de inesperado ocorreu no banco de dados")
+      # End game
+      pass
   
   def handle_user_disconnection(self, sid):
     running_games_with_disconnected_user = self.db_session.query(GameModel) \

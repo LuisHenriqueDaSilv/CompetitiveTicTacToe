@@ -28,7 +28,7 @@ class UserUseCases:
     except IntegrityError:
       raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
-        detail="User already exists"
+        detail="nome de usuário já esta em uso"
       )
   
     authorization = JWTService.encode(user.username)
@@ -39,14 +39,14 @@ class UserUseCases:
     
     if user_on_db is None:
       raise HTTPException(
-        detail="Invalid username or password",
+        detail="nome de usuário ou senha invalido",
         status_code=status.HTTP_401_UNAUTHORIZED
       )
       
     password_is_valid = crypt_context.verify(user.password, user_on_db.password)
     if not password_is_valid:
       raise HTTPException(
-        detail="Invalid username or password",
+        detail="nome de usuário ou senha invalido",
         status_code=status.HTTP_401_UNAUTHORIZED
       )
       
