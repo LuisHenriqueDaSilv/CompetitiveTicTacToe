@@ -1,2 +1,2 @@
 from .userModel import UserModel, Base
-from .gameModel import GameModel
+from .multiplayerGameModel import MultiplayerGameModel

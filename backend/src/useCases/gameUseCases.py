@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 import random
 from src.db.gamesMemoryDatabase import GamesMemoryDatabase
-from src.db.models import GameModel
+from uuid import uuid4
+# from src.db.models import MultiplayerGameModel
 
 class GameUseCases():
   
@@ -13,40 +14,39 @@ class GameUseCases():
     self.sio = sio
     self.db_session = db_session
     
-  async def create_game(self, sid, data):
-    if data["gamemode"] == "algoritmo":
-      
-      created_game = GameModel(
-        mode="algoritmo", 
-        player1_id=None,
-        player2_id=None,
-        player1_sid=sid,
-        player2_sid=None,
-      )
-      try:
-        self.db_session.add(created_game)
-        self.db_session.commit()
-      except:
-        await self.sio.emit("bad", "erro no banco de dados", to=sid)
-        
-      self.game_memory.players_in_game[sid] = {
-        "sid":sid
-      }      
-      await self.sio.emit("new_game", {
-        "data":created_game.data,
-        "gameInfos": {
-          "mode":created_game.mode,
-          "id": created_game.id,
-          "oponent": {
-            "id": None,
-            "username": None,
-            "type": "algoritmo"
-          }
-        }
-      }, to=sid)
+  async def create_game(self, sid):
+    
+    game_uuid = uuid4().hex
+    created_game = {
+      "mode":"algoritmo", 
+      "x_player_id":None, # Adicionar ids dos usuários para funcionar em multiplayer 
+      "o_player_id":None,
+      "x_player_sid":sid,
+      "o_player_sid":None,
+      "data": "         ",
+      "id": game_uuid,
+      "current": "x"
+    }
+    self.game_memory.running_games[game_uuid] = created_game 
+    
+    self.game_memory.players_in_game[sid] = {
+      "sid":sid,
+      "id": None # Adicionar ids dos usuários para funcionar em multiplayer 
+    }
+    await self.sio.enter_room(sid, game_uuid)
+    await self.sio.emit("new_game", {
+      "data":created_game["data"],
+      "gameInfos": {
+        "mode":created_game["mode"],
+        "id":created_game["id"],
+        "current": created_game["current"],
+        "o_player": None,
+        "x_player": None
+      }
+    }, room=game_uuid)
   
-  def algorithm_random_position(self, game: GameModel):
-    game_positions = [a for a in game.data]
+  def algorithm_random_position(self, gameData):
+    game_positions = [a for a in gameData]
     free_positions_indexes = []
     for index, position in enumerate(game_positions):
       if position == " ":
@@ -54,106 +54,86 @@ class GameUseCases():
     move_position_index = random.randint(0, len(free_positions_indexes)-1)
     return free_positions_indexes[move_position_index]
     
-  async def algorithm_move(self, game:GameModel, sid):
-    algorithm_move_position = self.algorithm_random_position(game)
-    game_data = list(game.data)
-    game_data[algorithm_move_position] = game.current
+  async def algorithm_move(self, game):
+    algorithm_move_position = self.algorithm_random_position(game["data"])
+    game_data = list(game["data"])
+    game_data[algorithm_move_position] = game["current"]
     new_game_data = ''.join(game_data)
-    
-    game.data = new_game_data
-    game.current = "x" if game.current=="o" else "o"
-    try: 
-      self.db_session.commit()
-    except: 
-        await self.sio.emit("bad", "erro no banco de dados", to=sid)
+    self.game_memory.running_games[game["id"]]["data"] = new_game_data
+    self.game_memory.running_games[game["id"]]["current"] = "x" if game["current"]=="o" else "o"
     
     await self.sio.emit(
       "new_move",
       {
         "new_data": new_game_data
       },
-      to=game.player1_sid
+      room=game["id"]
     )  
+    
+    has_winner = self.verify_winner(game["data"])
+    if has_winner:
+      return await self.handle_win(game)
   
-  def verify_winner(self, game):
+  def verify_winner(self, game_data):
     possibles_win_positions = [
       (0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), 
       (0, 4, 8), (2, 4, 6)
     ]
-    game_data = list(game.data)
+    game_data = list(game_data)
     has_winner = False
     for a, b, c in possibles_win_positions:
       has_winner = game_data[a] == game_data[b] and game_data[b] \
         == game_data[c] and game_data[c] != " "
       if has_winner:
         break 
-      
     return has_winner
     
-  async def handle_win(self, game:GameModel):
-    return await self.sio.emit("win", "", to=game.player1_sid)
+  async def handle_win(self, game):
+    # game.winner_id = game.player1_id if game.current == "x" else game.player2_id
+    return await self.sio.emit("win", "", room=game["id"])
     
   async def handle_move(self, sid, data):
     game_id = data.get("gameId")
     position = data.get("position")
     
     try: 
-      game_id = int(game_id)
       position = int(position)
     except ValueError:
-      return await self.sio.emit("bad", "id de partida ou posição invalida", to=sid)
+      return await self.sio.emit("bad", "a posição precisa ser um inteiro", to=sid)
     
     if position is None or (position < 0 or position > 9):
       return await self.sio.emit("bad", "posição invalida", to=sid)
     
-    game_on_db = self.db_session.query(GameModel)\
-      .filter(GameModel.status=="RUN")\
-      .filter(GameModel.id==game_id)\
-      .filter(or_(GameModel.player1_sid == sid, GameModel.player2_sid==sid))\
-      .first()
-      
-    if game_on_db is None:
+    game_on_memory = self.game_memory.running_games.get(game_id, None) 
+    if game_on_memory is None:
       return await self.sio.emit("bad", "id de partida invalida", to=sid)
-    if (sid == game_on_db.player1_sid and game_on_db.current != "x") or (sid == game_on_db.player2_sid and game_on_db.current != "o"):
+    
+    player_is_x = game_on_memory["x_player_sid"]==sid
+    player_is_o = game_on_memory["o_player_sid"]==sid
+    if not player_is_x and not player_is_o:
+      return await self.sio.emit("bad", "a partida informada não é sua", to=sid)
+
+    if (player_is_x and game_on_memory["current"] != "x") or (player_is_o and game_on_memory["current"] != "o"):
       return await self.sio.emit("bad", "Não é a sua vez de jogar", to=sid)
     
-    game_data = list(game_on_db.data)
+    game_data = list(game_on_memory["data"])
     if game_data[position] != " ":
       return await self.sio.emit("bad", "posição invalida", to=sid)
     
-    game_data[position] = game_on_db.current
+    game_data[position] = game_on_memory["current"]
     new_game_data = ''.join(game_data)
-    game_on_db.data = new_game_data
-    game_on_db.current = "x" if game_on_db.current=="o" else "o"
+    game_on_memory["data"] = new_game_data
     
-    try: 
-      self.db_session.commit()
-    except: 
-        await self.sio.emit("bad", "erro no banco de dados", to=sid)
-    
-    if game_on_db.mode == "algoritmo":
-      await self.algorithm_move(game_on_db, sid)
-    
-    has_winner = self.verify_winner(game_on_db)
-    
+    has_winner = self.verify_winner(game_on_memory["data"])
     if has_winner:
-      await self.handle_win(game_on_db)
-      
+      return await self.handle_win(game_on_memory)
     
-  def delete_game(self, game):
-    try:
-      self.db_session.delete(game)
-      self.db_session.commit()
-    except:
-      # End game
-      pass
-  
+    game_on_memory["current"] = "x" if game_on_memory["current"]=="o" else "o"  
+    if game_on_memory["mode"] == "algoritmo":
+      await self.algorithm_move(game_on_memory)
+        
   def handle_user_disconnection(self, sid):
-    running_games_with_disconnected_user = self.db_session.query(GameModel) \
-      .filter(or_(GameModel.player1_sid==sid, GameModel.player2_sid==sid)) \
-      .filter(GameModel.status=="RUN" ) \
-      .all()
-      
-    for game in running_games_with_disconnected_user:
-      if game.mode == "algoritmo":
-        self.delete_game(game)
+    for game_id in self.game_memory.running_games:
+      if (self.game_memory.running_games[game_id]["x_player_sid"] == sid or \
+        self.game_memory.running_games[game_id]["o_player_sid"] == sid):
+          del self.game_memory.running_games[game_id]

@@ -26,22 +26,14 @@ def handle_socket_disconnection(sid):
 @sio.on("searching_new_game")
 async def handle_player_searching_game(sid, data):
   if sid in GameMemory.players_in_game:
-    await sio.emit("bad", "You already in a game", to=sid)
+    await sio.emit("bad", "você já esta em uma partida", to=sid)
     return 
-  
-  if not data.get("gamemode"):
-    await sio.emit("bad", "gamemode invalid", to=sid)
-    return
     
-  if data.get("gamemode") == 'algoritmo':
-    await GameUseCase.create_game(sid, data)
-  else:
-    # verify auth and find a game 
-    pass
+  await GameUseCase.create_game(sid)
 
 @sio.on("move")
 async def handle_move(sid, data):
   if sid not in GameMemory.players_in_game:
-    return await sio.emit("bad", "you are not in a game", to=sid)
+    return await sio.emit("bad", "você não esta em uma partida", to=sid)
     
   await GameUseCase.handle_move(sid, data)
