@@ -60,7 +60,6 @@ class GameUseCases():
     game_data[algorithm_move_position] = game["current"]
     new_game_data = ''.join(game_data)
     self.game_memory.running_games[game["id"]]["data"] = new_game_data
-    self.game_memory.running_games[game["id"]]["current"] = "x" if game["current"]=="o" else "o"
     
     await self.sio.emit(
       "new_move",
@@ -70,28 +69,36 @@ class GameUseCases():
       room=game["id"]
     )  
     
-    has_winner = self.verify_winner(game["data"])
-    if has_winner:
-      return await self.handle_win(game)
+    result = self.verify_result(game["data"])
+    if not result is None:
+      return await self.handle_result(game, result)
+    
+    self.game_memory.running_games[game["id"]]["current"] = "x" if game["current"]=="o" else "o"
   
-  def verify_winner(self, game_data):
+  def verify_result(self, game_data):
+    game_data = list(game_data)
+    blank_positions = game_data.count(" ")
+    if blank_positions > 4: return None # Sem movimentos suficientes para ter um resultado
+    
+    has_winner = False
     possibles_win_positions = [
       (0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), 
       (0, 4, 8), (2, 4, 6)
     ]
-    game_data = list(game_data)
-    has_winner = False
     for a, b, c in possibles_win_positions:
       has_winner = game_data[a] == game_data[b] and game_data[b] \
         == game_data[c] and game_data[c] != " "
       if has_winner:
         break 
-    return has_winner
+      
+    if has_winner: return "win" 
+    if blank_positions == 0: return "tie"
     
-  async def handle_win(self, game):
+  async def handle_result(self, game, result):
+    self.delete_game(game=game)
     return await self.sio.emit("end_game", {
-      "result": "win",
-      "winner": game["current"]
+      "result": result,
+      "winner": game["current"] if result == "win" else None
       }, room=game["id"])
     
   async def handle_move(self, sid, data):
@@ -126,16 +133,24 @@ class GameUseCases():
     new_game_data = ''.join(game_data)
     game_on_memory["data"] = new_game_data
     
-    has_winner = self.verify_winner(game_on_memory["data"])
-    if has_winner:
-      return await self.handle_win(game_on_memory)
+    result = self.verify_result(game_on_memory["data"])
+    if not result is None:
+      return await self.handle_result(game_on_memory, result)
     
     game_on_memory["current"] = "x" if game_on_memory["current"]=="o" else "o"  
     if game_on_memory["mode"] == "algoritmo":
       await self.algorithm_move(game_on_memory)
-        
+      
+  def delete_game(self, sid=None, game=None):
+    if game is None:
+      for game_id in self.game_memory.running_games:
+        if (self.game_memory.running_games[game_id]["x_player_sid"] == sid or \
+          self.game_memory.running_games[game_id]["o_player_sid"] == sid):
+            game = self.game_memory.running_games[game_id]
+            break
+    if game.get("x_player_sid") is not None: del self.game_memory.players_in_game[game["x_player_sid"]]
+    if game.get("o_player_sid") is not None: del self.game_memory.players_in_game[game["o_player_sid"]]
+    del game
+      
   def handle_user_disconnection(self, sid):
-    for game_id in self.game_memory.running_games:
-      if (self.game_memory.running_games[game_id]["x_player_sid"] == sid or \
-        self.game_memory.running_games[game_id]["o_player_sid"] == sid):
-          del self.game_memory.running_games[game_id]
+    self.delete_game(sid)
