@@ -14,24 +14,28 @@ interface socketContextProviderValuesInterface {
   submitMove: (GameId: number) => void,
   isMyTurn: boolean
 }
-
-interface gameInfosInterface {
-  id: number,
-  mode: "multiplayer" | "algoritmo",
-  oponent: {
-    type: "player" | "algorithm",
-    id: number | null,
-    username: string | null
-  }
+interface playerInterface {
+  type: "player" | "algorithm",
+  id: number | null,
+  username: string | null
 }
-
+interface gameInfosInterface {
+  mode: "multiplayer" | "algoritmo",
+  o_player: playerInterface | null,
+  x_player : playerInterface | null,
+  id: string,
+  current: "x" | "o",
+}
 interface newGameDataInterface {
   data: "",
   gameInfos: gameInfosInterface
 }
-
 interface newMoveDataInterface {
   new_data: ""
+}
+interface endGameEventInterface {
+  result: "win"|"tie",
+  winner: "x"|"o"|""
 }
 
 export const GameSocketContext = createContext({} as socketContextProviderValuesInterface)
@@ -42,7 +46,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
   const [gamemode, setGamemode] = useState<"multiplayer" | "algoritmo">("algoritmo")
   const [findingGame, setFindingGame] = useState<boolean>(false)
   const [gamedata, setGamedata] = useState<string[]>([])
-  const [gameInfos, setGameInfos] = useState<gameInfosInterface>()
+  const [gameInfos, setGameInfos] = useState<gameInfosInterface|null>(null)
   const [isMyTurn, setIsMyTurn] = useState<boolean>(true)
   const [socket, setSocket] = useState<any>()
 
@@ -101,22 +105,27 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
       setGameInfos(data.gameInfos)
       setFindingGame(false)
     }
-    function onWin() {
-      alert("Ganhador")
+    function onEndGame(data: endGameEventInterface) {
+      if (data.result == "win"){
+        alert(`Temos um vencedor! E ele é: ${data.winner}`)
+      }
+      setInGame(false)
+      setGamedata([])
+      setGameInfos(null)
     }
     
     socketClient.on("connect", onConnect)
     socketClient.on("disconnect", onDisconnect)
     socketClient.on("bad", onBad)
     socketClient.on("new_game", onNewGame)
-    socketClient.on("win", onWin)
+    socketClient.on("end_game", onEndGame)
 
     return () => {
       socketClient.off("connect", onConnect)
       socketClient.off("disconnect", onDisconnect)
       socketClient.off("bad", onBad)
       socketClient.off("new_game", onNewGame)
-      socketClient.off("win", onWin)
+      socketClient.off("end_game", onEndGame)
     }
   }, [])
 

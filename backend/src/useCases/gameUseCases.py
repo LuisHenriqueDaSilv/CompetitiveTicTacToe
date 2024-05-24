@@ -4,7 +4,7 @@ from sqlalchemy import or_
 import random
 from src.db.gamesMemoryDatabase import GamesMemoryDatabase
 from uuid import uuid4
-# from src.db.models import MultiplayerGameModel
+from src.db.models import MultiplayerGameModel
 
 class GameUseCases():
   
@@ -89,8 +89,10 @@ class GameUseCases():
     return has_winner
     
   async def handle_win(self, game):
-    # game.winner_id = game.player1_id if game.current == "x" else game.player2_id
-    return await self.sio.emit("win", "", room=game["id"])
+    return await self.sio.emit("end_game", {
+      "result": "win",
+      "winner": game["current"]
+      }, room=game["id"])
     
   async def handle_move(self, sid, data):
     game_id = data.get("gameId")
