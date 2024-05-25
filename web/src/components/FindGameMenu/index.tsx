@@ -1,11 +1,13 @@
 import { useContext } from "react"
 import { GameSocketContext } from "../../contexts/gameSocketContext"
 import { AuthenticationContext } from "../../contexts/authenticationContext"
+import { useNavigate } from "react-router"
 
 import styles from './styles.module.scss'
-import AuthenticationArea from "../AuthenticationArea"
 
 export default function FindMatchMenu() {
+
+  const navigate = useNavigate() 
 
   const {
     gamemode,
@@ -16,28 +18,26 @@ export default function FindMatchMenu() {
     authenticated
   } = useContext(AuthenticationContext)
 
+  if(!authenticated && gamemode == "multiplayer"){
+    navigate("/criar-conta")
+    return null
+  }
+
   return (
     <div
       className={styles.container}
-      id={gamemode == "multiplayer" ? styles.fullContainer : ""}
     >
       {
-        ((gamemode == "algoritmo") || (gamemode == "multiplayer" && authenticated)) ? (
+        gamemode == "algoritmo" ? (
           <>
-            {
-              gamemode == "algoritmo" ? (
-                <>
-                  <p>Inicie uma partida contra nosso algoritmo clicando no botão abaixo</p>
-                  <span>(Partidas contra o algoritmo não contam para o rank)</span>
-                </>
-              ) : (
-                <p>compita contra outros jogadores pelo rank!</p>
-              )
-            }
-            <button onClick={findGame}>Buscar partida</button>
+            <p>Inicie uma partida contra nosso algoritmo clicando no botão abaixo</p>
+            <span>(Partidas contra o algoritmo não contam para o rank)</span>
           </>
-        ) : <AuthenticationArea />
+        ) : (
+          <p>compita contra outros jogadores pelo rank!</p>
+        )
       }
+      <button onClick={findGame}>Iniciar partida</button>
     </div>
   )
 }

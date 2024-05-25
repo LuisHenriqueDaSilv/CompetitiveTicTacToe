@@ -2,6 +2,8 @@ import { ReactNode, createContext, useEffect, useState } from 'react'
 
 import socketClient from '../services/socket'
 
+import gameRouter from './gameRouter'
+
 interface socketContextProviderParamsInterface {
   children: ReactNode
 }
@@ -41,6 +43,8 @@ interface endGameEventInterface {
 export const GameSocketContext = createContext({} as socketContextProviderValuesInterface)
 
 export function GameSocketProvider({ children }: socketContextProviderParamsInterface) {
+
+
   const [isConnected, setIsConnected] = useState<boolean>(socketClient.connected);
   const [inGame, setInGame] = useState<boolean>(false)
   const [gamemode, setGamemode] = useState<"multiplayer" | "algoritmo">("algoritmo")
@@ -74,6 +78,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
   }
 
   useEffect(() => {
+
     function onNewMove(data: newMoveDataInterface) {
       setTimeout(() => {
         setGamedata(data.new_data.split(""))
@@ -105,6 +110,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
       setGameInfos(data.gameInfos)
       setFindingGame(false)
       setIsMyTurn(true)
+      gameRouter.navigate("/game")
     }
     function onEndGame(data: endGameEventInterface) {
       setTimeout(() => {
@@ -117,6 +123,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
         setInGame(false)
         setGamedata([])
         setGameInfos(null)
+        gameRouter.navigate("/encontrar-partida")
       }, 1000)
     }
     

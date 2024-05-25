@@ -8,6 +8,10 @@
   align-items: center;
   text-align: center;
 
+  p {
+    color: var(--white);
+  }
+
   form {
     margin-top: 4rem;
     display: flex;
@@ -65,6 +69,11 @@
     button {
       font-size: 1.8rem;
       max-width: 30rem;
+      background-color: var(--green);
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      color: var(--white);
     }
   }
 

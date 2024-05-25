@@ -11,19 +11,19 @@ export default function AuthenticationArea() {
       <p>registre-se para jogar e competir contra outros jogadores!</p>
       <form>
         <div>
-          <input required></input>
+          <input required/>
           <img src={UserIcon} />
           <span>Por qual nome deseja ser chamado?</span>
           <p>este sera o nome mostrado em suas partidas e rank’s</p>
         </div>
         <div>
-          <input required></input>
+          <input required/>
           <img src={EmailIcon} />
           <span> Qual é o seu email?</span>
           <p> este sera o email utilizado para entrar em seu perfil nos seus próximos acessos</p>
         </div>
         <div>
-          <input required></input>
+          <input required type='password'/>
           <img src={PasswordIcon} />
           <span>Crie uma senha</span>
         </div>
