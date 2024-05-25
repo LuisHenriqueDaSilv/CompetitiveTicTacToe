@@ -78,7 +78,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
       setTimeout(() => {
         setGamedata(data.new_data.split(""))
         setIsMyTurn(true)
-      }, gameInfos?.mode == "algoritmo" ? 1000 : 0)
+      }, gameInfos?.mode == "algoritmo" ? 500 : 0)
     }
 
     socket?.on("new_move", onNewMove)
@@ -104,14 +104,20 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
       setGamedata(data.data.split(""))
       setGameInfos(data.gameInfos)
       setFindingGame(false)
+      setIsMyTurn(true)
     }
     function onEndGame(data: endGameEventInterface) {
-      if (data.result == "win"){
-        alert(`Temos um vencedor! E ele é: ${data.winner}`)
-      }
-      setInGame(false)
-      setGamedata([])
-      setGameInfos(null)
+      setTimeout(() => {
+        if (data.result == "win"){
+          alert(`Temos um vencedor! Parabens, ${data.winner}`)
+        }
+        if(data.result == "tie"){
+          alert("Temos um empate. Boa sorte na próxima!")
+        }
+        setInGame(false)
+        setGamedata([])
+        setGameInfos(null)
+      }, 1000)
     }
     
     socketClient.on("connect", onConnect)
