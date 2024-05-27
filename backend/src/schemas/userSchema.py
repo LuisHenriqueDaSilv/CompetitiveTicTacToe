@@ -23,7 +23,7 @@ class UserSchema(BaseModel):
   def validate_username(value):
     if not re.match("^([a-z]|[A-Z]|[0-9])+$", value) or len(value) > 10:
       raise HTTPException(
-        detail="Username format invalid",
+        detail="Nome de usuário invalido",
         status_code=status.HTTP_400_BAD_REQUEST
       )
     return value
@@ -31,5 +31,12 @@ class UserSchema(BaseModel):
   @field_validator("email")
   @staticmethod
   def validate_email(value):
+
+    validate_email_regex = r"""^(?:(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*)|(?:".+"))@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\]))$"""
+    if not re.match(validate_email_regex, value):
+      raise HTTPException(
+        detail="email invalido",
+        status_code=status.HTTP_400_BAD_REQUEST
+      )
     return value
     
