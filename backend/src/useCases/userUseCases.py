@@ -19,7 +19,8 @@ class UserUseCases:
   def user_register(self, user: UserSchema):
     created_user = UserModel(
       username=user.username,
-      password=crypt_context.hash(user.password)
+      password=crypt_context.hash(user.password),
+      email=user.email
     )
     
     try:

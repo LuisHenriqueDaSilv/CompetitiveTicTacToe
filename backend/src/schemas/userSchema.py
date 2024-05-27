@@ -16,6 +16,7 @@ def form_body(cls):
 class UserSchema(BaseModel):
   username: str = Form(...)
   password: str = Form(...)
+  email: str = Form(...)
   
   @field_validator("username")
   @staticmethod
@@ -25,5 +26,10 @@ class UserSchema(BaseModel):
         detail="Username format invalid",
         status_code=status.HTTP_400_BAD_REQUEST
       )
+    return value
+  
+  @field_validator("email")
+  @staticmethod
+  def validate_email(value):
     return value
     
