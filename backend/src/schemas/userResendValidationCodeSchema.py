@@ -1,26 +1,13 @@
 import re
-from fastapi import Form, status
-from fastapi.exceptions import HTTPException
+from fastapi import Form, status, HTTPException
 from pydantic import BaseModel, field_validator
 
-from src.utils import form_body
+from src.utils.formBodyParser import form_body
 
 @form_body
-class UserSchema(BaseModel):
-  username: str = Form(...)
-  password: str = Form(...)
+class UserResendValidationCodeSchema(BaseModel):
   email: str = Form(...)
-  
-  @field_validator("username")
-  @staticmethod
-  def validate_username(value):
-    if not re.match("^([a-z]|[A-Z]|[0-9])+$", value) or len(value) > 10:
-      raise HTTPException(
-        detail="Nome de usuário invalido",
-        status_code=status.HTTP_400_BAD_REQUEST
-      )
-    return value
-  
+
   @field_validator("email")
   @staticmethod
   def validate_email(value):
@@ -31,4 +18,3 @@ class UserSchema(BaseModel):
         status_code=status.HTTP_400_BAD_REQUEST
       )
     return value
-    

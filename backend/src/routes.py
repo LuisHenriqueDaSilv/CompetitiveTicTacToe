@@ -1,16 +1,28 @@
+from dotenv import dotenv_values
 from fastapi import APIRouter, Depends, status, Request
 from fastapi.responses import JSONResponse 
 from sqlalchemy.orm import Session
 
 from .depends import get_db_session
-from .schemas.userSchema import UserSchema
-from .services import JWTService
+from .schemas import UserSchema, UserValidationSchema, UserResendValidationCodeSchema
+from .services import JWTService, EmailService
 from .useCases import UserUseCases
 
+
+# Email server settings
+EMAIL_PASSWORD=dotenv_values().get("GMAIL_APP_PASSWORD", None)
+EMAIL_ADDRESS=dotenv_values().get("GMAIL_ADDRESS", None)
+emailService = EmailService(
+  email=EMAIL_ADDRESS,
+  password=EMAIL_PASSWORD
+)
+
+#Routes
 authentication_router = APIRouter(prefix="/autenticacao")
 authenticated_router = APIRouter(dependencies=[Depends(JWTService.token_verifier)], prefix="/autenticado")
+global_router = APIRouter()
 
-@authentication_router.get("/")
+@global_router.get("/")
 def health_check() -> JSONResponse:
   return JSONResponse(
     content={"msg":"hello world"},
@@ -20,15 +32,44 @@ def health_check() -> JSONResponse:
 @authentication_router.post("/registro")
 def user_register(
   userData: UserSchema=Depends(UserSchema),
-  db_session:Session=Depends(get_db_session)
+  dbSession:Session=Depends(get_db_session)
 ) -> JSONResponse:
-  userUseCase = UserUseCases(db_session=db_session)
-  authorization_data = userUseCase.user_register(userData)
+  userUseCase = UserUseCases(dbSession=dbSession, emailService=emailService)
+  creation_status = userUseCase.user_register(userData)
+  
+  return JSONResponse(
+    content={
+      "detail":creation_status,
+    },
+    status_code=status.HTTP_201_CREATED
+  )
+
+@authentication_router.post("/validar")
+def user_validator(
+  validationData: UserValidationSchema=Depends(UserValidationSchema),
+  dbSession:Session=Depends(get_db_session)
+) -> JSONResponse:
+  userUseCase = UserUseCases(dbSession=dbSession, emailService=emailService)
+  userUseCase.user_validate(validationData)
   
   return JSONResponse(
     content={
       "detail":"sucesso",
-      "authorization": authorization_data
+    },
+    status_code=status.HTTP_201_CREATED
+  )
+
+@authentication_router.post("/reenviar-codigo")
+def user_resend_validation_code(
+  requestData: UserResendValidationCodeSchema=Depends(UserResendValidationCodeSchema),
+  dbSession:Session=Depends(get_db_session)
+) -> JSONResponse:
+  userUseCase = UserUseCases(dbSession=dbSession, emailService=emailService)
+  userUseCase.user_resend_validation_code(requestData)
+  
+  return JSONResponse(
+    content={
+      "detail":"sucesso",
     },
     status_code=status.HTTP_201_CREATED
   )
@@ -36,9 +77,9 @@ def user_register(
 @authentication_router.post("/login")
 def user_login(
   userData: UserSchema=Depends(UserSchema),
-  db_session: Session=Depends(get_db_session)
+  dbSession: Session=Depends(get_db_session)
 ) -> JSONResponse:
-  userUseCase= UserUseCases(db_session=db_session)
+  userUseCase= UserUseCases(dbSession=dbSession)
   authorization_data = userUseCase.user_login(userData)
   
   return JSONResponse(
