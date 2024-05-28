@@ -31,3 +31,13 @@ class UserSchema(BaseModel):
         status_code=status.HTTP_400_BAD_REQUEST
       )
     return email
+
+  @field_validator("password")
+  @staticmethod
+  def validate_password(password):
+    if len(password) < 6 or len(password)>50:
+      raise HTTPException(
+        detail="senha invalida",
+        status_code=status.HTTP_400_BAD_REQUEST
+      )
+    return password
