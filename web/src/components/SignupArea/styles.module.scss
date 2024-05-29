@@ -12,12 +12,18 @@
     color: var(--white);
   }
 
+  .errorMessage {
+    font-size: 1.9rem;
+    color: var(--red);
+    animation: error-animation 2s infinite
+  }
   form {
     margin-top: 4rem;
     display: flex;
     flex-direction: column;
     gap: 3rem;
     align-items: center;
+
 
     div {
       width: 100%;
@@ -85,6 +91,24 @@
       font-size: 1.8rem;
       color: var(--green);
     }
+  }
+}
+
+@keyframes error-animation {
+  0% {
+      transform: scale(1) rotate(0deg);
+  }
+  25% {
+      transform: scale(1.1) rotate(1deg);
+  }
+  50% {
+      transform: scale(1) rotate(0deg);
+  }
+  75% {
+      transform: scale(1.1) rotate(-1deg);
+  }
+  100% {
+      transform: scale(1) rotate(0deg);
   }
 }
 

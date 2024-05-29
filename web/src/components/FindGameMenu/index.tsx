@@ -1,11 +1,11 @@
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 import { GameSocketContext } from "../../contexts/gameSocketContext"
 import { AuthenticationContext } from "../../contexts/authenticationContext"
 import { useNavigate } from "react-router"
 
 import styles from './styles.module.scss'
 
-export default function FindMatchMenu() {
+export default function FindGameMenu() {
 
   const navigate = useNavigate() 
 
@@ -18,10 +18,12 @@ export default function FindMatchMenu() {
     authenticated
   } = useContext(AuthenticationContext)
 
-  if(!authenticated && gamemode == "multiplayer"){
-    navigate("/criar-conta")
-    return null
-  }
+  useEffect(() => {
+    if(!authenticated && gamemode == "multiplayer"){
+      navigate("/criar-conta")
+    }
+  })
+
 
   return (
     <div

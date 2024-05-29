@@ -1,7 +1,7 @@
 import styles from './styles/appStyles.module.scss'
 
 // Components:
-import GameRouter from "./contexts/gameRouter"
+import BoardRouter from "./contexts/boardRouter"
 import AsideMenu from './components/AsideMenu'
 import { RouterProvider } from 'react-router-dom'
 
@@ -17,7 +17,7 @@ export default function App(){
             <h1>Jogo da velha</h1>
           </header>
 
-          <RouterProvider router={GameRouter}/>
+          <RouterProvider router={BoardRouter}/>
 
         </div>
 

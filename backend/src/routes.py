@@ -50,13 +50,14 @@ def user_validator(
   dbSession:Session=Depends(get_db_session)
 ) -> JSONResponse:
   userUseCase = UserUseCases(dbSession=dbSession, emailService=emailService)
-  userUseCase.user_validate(validationData)
+  authentication_data = userUseCase.user_validate(validationData)
   
   return JSONResponse(
     content={
       "detail":"sucesso",
+      "authentication": authentication_data
     },
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_200_OK
   )
 
 @authentication_router.post("/reenviar-codigo")
@@ -87,7 +88,7 @@ def user_login(
     status_code=status.HTTP_200_OK
   )
   
-@authenticated_router.get("/teste")
+@authenticated_router.get("/jogador")
 def user_authorization_test(
   request:Request
 ) -> JSONResponse:

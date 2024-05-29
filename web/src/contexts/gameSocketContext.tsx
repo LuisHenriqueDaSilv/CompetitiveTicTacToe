@@ -2,7 +2,7 @@ import { ReactNode, createContext, useEffect, useState } from 'react'
 
 import socketClient from '../services/socket'
 
-import gameRouter from './gameRouter'
+import boardRouter from './boardRouter'
 
 interface socketContextProviderParamsInterface {
   children: ReactNode
@@ -44,8 +44,6 @@ export const GameSocketContext = createContext({} as socketContextProviderValues
 
 export function GameSocketProvider({ children }: socketContextProviderParamsInterface) {
 
-
-  const [isConnected, setIsConnected] = useState<boolean>(socketClient.connected);
   const [inGame, setInGame] = useState<boolean>(false)
   const [gamemode, setGamemode] = useState<"multiplayer" | "algoritmo">("algoritmo")
   const [findingGame, setFindingGame] = useState<boolean>(false)
@@ -95,12 +93,6 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
   useEffect(() => {
     socketClient.connect()
     setSocket(socketClient)
-    function onConnect() {
-      setIsConnected(true);
-    }
-    function onDisconnect() {
-      setIsConnected(false);
-    }
     function onBad(data: string) {
       alert(data)
     }
@@ -110,7 +102,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
       setGameInfos(data.gameInfos)
       setFindingGame(false)
       setIsMyTurn(true)
-      gameRouter.navigate("/game")
+      boardRouter.navigate("/game")
     }
     function onEndGame(data: endGameEventInterface) {
       setTimeout(() => {
@@ -123,19 +115,15 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
         setInGame(false)
         setGamedata([])
         setGameInfos(null)
-        gameRouter.navigate("/encontrar-partida")
+        boardRouter.navigate("/encontrar-partida")
       }, 1000)
     }
     
-    socketClient.on("connect", onConnect)
-    socketClient.on("disconnect", onDisconnect)
     socketClient.on("bad", onBad)
     socketClient.on("new_game", onNewGame)
     socketClient.on("end_game", onEndGame)
 
     return () => {
-      socketClient.off("connect", onConnect)
-      socketClient.off("disconnect", onDisconnect)
       socketClient.off("bad", onBad)
       socketClient.off("new_game", onNewGame)
       socketClient.off("end_game", onEndGame)
