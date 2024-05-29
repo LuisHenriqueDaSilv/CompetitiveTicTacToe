@@ -5,7 +5,7 @@ from .db.connection import Session
 from .useCases import GameUseCases
 
 
-sio = socketio.AsyncServer(cors_allowed_origins='*',async_mode='asgi')
+sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins=[])
 socketio_app = socketio.ASGIApp(sio)
 
 GameMemory = GamesMemoryDatabase()
@@ -28,12 +28,10 @@ async def handle_player_searching_game(sid, data):
   if sid in GameMemory.players_in_game:
     await sio.emit("bad", "você já esta em uma partida", to=sid)
     return 
-    
   await GameUseCase.create_game(sid)
 
 @sio.on("move")
 async def handle_move(sid, data):
   if sid not in GameMemory.players_in_game:
     return await sio.emit("bad", "você não esta em uma partida", to=sid)
-    
   await GameUseCase.handle_move(sid, data)
