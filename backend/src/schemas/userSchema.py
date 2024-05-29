@@ -25,7 +25,7 @@ class UserSchema(BaseModel):
   @staticmethod
   def validate_email(email):
     validate_email_regex = r"""^(?:(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*)|(?:".+"))@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\]))$"""
-    if not re.match(validate_email_regex, email):
+    if not re.match(validate_email_regex, email) or len(email) > 320:
       raise HTTPException(
         detail="email invalido",
         status_code=status.HTTP_400_BAD_REQUEST
@@ -35,7 +35,7 @@ class UserSchema(BaseModel):
   @field_validator("password")
   @staticmethod
   def validate_password(password):
-    if len(password) < 6 or len(password)>50:
+    if len(password)>50:
       raise HTTPException(
         detail="senha invalida",
         status_code=status.HTTP_400_BAD_REQUEST
