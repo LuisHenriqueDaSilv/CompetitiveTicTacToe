@@ -1,21 +1,14 @@
 import { useContext } from "react"
-import { GameSocketContext } from "../../contexts/gameSocketContext"
+import { GameContext } from "../../contexts/gameContext"
 import styles from './styles.module.scss'
-// Icons
 import MedalIcon from '../../assets/medal.svg'
-
 
 export default function GameBoard() {
 
-  const { 
-    gamedata, 
-    submitMove, 
-    isMyTurn 
-  } = useContext(GameSocketContext)
+  const { gamedata, submitMove, isMyTurn } = useContext(GameContext)
 
   return (
     <div className={styles.container}>
-
       <aside className={styles.playersInfosContainer}>
         <section className={styles.playerInfos}>
           <p>xxxxxxxxxx</p>
@@ -33,11 +26,9 @@ export default function GameBoard() {
           </div>
         </section>
       </aside>
-
       <div className={styles.game}>
         {
           gamedata.map((field, index) => {
-
             const firstColumnIndex = [0, 3, 6]
             const lastColumnIndex = [2, 5, 8]
             const firstRowIndex = [0, 1, 2]
@@ -54,16 +45,13 @@ export default function GameBoard() {
                 `}
                 onClick={() => { submitMove(index) }}
               >
-                {field != ' ' ? (
-                  <img src={field == 'x' ? "/cross.png" : "/circle.png"} />
-                ) : null}
+                {field != ' ' ? (<img src={field == 'x' ? "/cross.png" : "/circle.png"} />) : null
+                }
               </button>
             )
           })
         }
-
       </div>
-
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { FormEvent, useContext, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { GameSocketContext } from '../../contexts/gameSocketContext'
+import { GameContext } from '../../contexts/gameContext'
 import { AuthenticationContext } from '../../contexts/authenticationContext'
 import EmailIcon from '../../assets/email.svg'
 import PasswordIcon from '../../assets/password.svg'
@@ -12,7 +12,7 @@ export default function SignupArea() {
 
   const navigate = useNavigate()
   const { signup } = useContext(AuthenticationContext)
-  const { gamemode } = useContext(GameSocketContext)
+  const { gamemode } = useContext(GameContext)
 
   const [username, setUsername] = useState<string>("")
   const [email, setEmail] = useState<string>("")
@@ -21,19 +21,21 @@ export default function SignupArea() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   async function handleSignupFormSubmit(event: FormEvent) {
+    event.preventDefault()
+
     setError(null)
     setIsLoading(true)
-    event.preventDefault()
+
     if (!username || !email || !username) setError("preencha todos os campos para criar seu perfil")
 
     signup({ email, password, username }).then(() => {
-      navigate("/validar", { state: { email } })
       setIsLoading(false)
+      navigate("/validar", { state: { email } })
     }).catch((error) => {
       setIsLoading(false)
       if (error.response && error.response.status == 400) {
-        if(error.response.data.detail == "já existe um processo de validação com este email, verifique sua caixa de entrada"){
-          navigate("/validar", { state: { email } })
+        if (error.response.data.detail == "já existe um processo de validação com este email, verifique sua caixa de entrada") {
+          return navigate("/validar", { state: { email } })
         }
         return setError(error.response.data.detail)
       }
@@ -41,13 +43,10 @@ export default function SignupArea() {
     })
   }
 
-  if (gamemode == "algoritmo") {
-    return navigate("/encontrar-partida")
-  }
+  if (gamemode == "algoritmo") return navigate("/encontrar-partida")
 
   return (
     <div className={styles.container}>
-
       <p>registre-se para jogar e competir contra outros jogadores!</p>
       {
         error ? (<p className={styles.errorMessage}>{error}</p>) : null
@@ -89,12 +88,9 @@ export default function SignupArea() {
           <span>Crie uma senha</span>
         </div>
         <button disabled={isLoading} type="submit">
-          {
-            isLoading ? (<LoadingSpinner />) : (<>registrar-se</>)
-          }
+          {isLoading ? (<LoadingSpinner />) : (<>registrar-se</>)}
         </button>
       </form>
-
       <p> ou já tem uma conta? <a href="/login">Clique aqui</a></p>
     </div>
   )

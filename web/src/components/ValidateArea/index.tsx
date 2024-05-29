@@ -1,9 +1,8 @@
 import { FormEvent, KeyboardEvent, useContext, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
-
-import styles from './styles.module.scss'
 import { AuthenticationContext } from "../../contexts/authenticationContext"
 import LoadingSpinner from "../LoadingSpinner"
+import styles from './styles.module.scss'
 
 export default function ValidateArea() {
 
@@ -24,17 +23,13 @@ export default function ValidateArea() {
 
     if (event.key == "Backspace") {
       newCodeData[index] = ""
-      if (index > 0) {
-        // @ts-ignore
-        inputRefs[index - 1].current.focus()
-      }
+      // @ts-ignore
+      if (index > 0) { inputRefs[index - 1].current.focus() }
     } else {
       if (validKeys.indexOf(inputValue) != -1) {
         newCodeData[index] = inputValue
-        if (index < 3) {
-          // @ts-ignore
-          inputRefs[index + 1].current.focus()
-        }
+        // @ts-ignore
+        if (index < 3) { inputRefs[index + 1].current.focus() }
       }
     }
     setValidationCode(newCodeData)
@@ -45,30 +40,33 @@ export default function ValidateArea() {
     setIsLoading(true)
     setError(null)
 
-    validateEmail({ code: validationCode.join(""), email: state.email }).then(async (response) => {
-      alert("Seja bem vindo, agora você pode jogar normalmente!")
-      console.log(response.data.authentication.token)
+    validateEmail({
+      code: validationCode.join(""),
+      email: state.email
+    }).then(async (response) => {
       await fetchPlayerData(response.data.authentication.token)
       setIsLoading(false)
+      navigate("/encontrar-partida")
+
     }).catch((error) => {
       setIsLoading(false)
       if (error.response && error.response.status == 400) {
-        setError(error.response.data.detail)
-        return
+        return setError(error.response.data.detail)
       }
       setError("algo de inesperado ocorreu, tente novamente mais tarde")
     })
   }
 
-  if (!state) {
-    alert("Erro de validação")
-    navigate("/")
-    return
-  }
+  if (!state) { return navigate("/") }
+
   return (
     <div className={styles.container}>
       <h2>Só mais uma etapa!</h2>
-      <p>antes de iniciar os jogos é necessário validar que o email informado é realmente seu! para isso, verifique sua caixa de entrada de email e informe o código de segurança enviado (Lembre-se de chegar a caixa de spam)</p>
+      <p>
+        antes de iniciar os jogos é necessário validar que o email informado é 
+        realmente seu! para isso, verifique sua caixa de entrada de email e 
+        informe o código de segurança enviado (Lembre-se de chegar a caixa de spam)
+        </p>
       {
         error ? (<p className={styles.errorMessage}>{error}</p>) : null
       }
@@ -79,7 +77,7 @@ export default function ValidateArea() {
               return (
                 <input
                   onKeyDown={(event) => { handleKeyDown(event, index) }}
-                  required={true}
+                  required
                   value={codeField}
                   ref={inputRefs[index]}
                 />
@@ -88,7 +86,7 @@ export default function ValidateArea() {
           }
         </div>
         <button type="submit">
-          {isLoading? (<LoadingSpinner/>):<>validar</>}
+          {isLoading ? (<LoadingSpinner />) : <>validar</>}
         </button>
       </form>
       <button>não recebeu o código? <span>reenviar</span></button>

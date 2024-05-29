@@ -1,43 +1,26 @@
-import { useContext, useEffect } from "react"
-import { GameSocketContext } from "../../contexts/gameSocketContext"
+import { useContext } from "react"
+import { GameContext } from "../../contexts/gameContext"
 import { AuthenticationContext } from "../../contexts/authenticationContext"
 import { useNavigate } from "react-router"
-
 import styles from './styles.module.scss'
 
 export default function FindGameMenu() {
 
   const navigate = useNavigate() 
+  const { gamemode, findGame} = useContext(GameContext)
+  const {authenticated} = useContext(AuthenticationContext)
 
-  const {
-    gamemode,
-    findGame
-  } = useContext(GameSocketContext)
-
-  const {
-    authenticated
-  } = useContext(AuthenticationContext)
-
-  useEffect(() => {
-    if(!authenticated && gamemode == "multiplayer"){
-      navigate("/criar-conta")
-    }
-  })
-
+  if(!authenticated && gamemode == "multiplayer")return navigate("/criar-conta")
 
   return (
-    <div
-      className={styles.container}
-    >
+    <div className={styles.container}>
       {
         gamemode == "algoritmo" ? (
           <>
             <p>Inicie uma partida contra nosso algoritmo clicando no botão abaixo</p>
             <span>(Partidas contra o algoritmo não contam para o rank)</span>
           </>
-        ) : (
-          <p>compita contra outros jogadores pelo rank!</p>
-        )
+        ) : ( <p>compita contra outros jogadores pelo rank!</p>)
       }
       <button onClick={findGame}>Iniciar partida</button>
     </div>

@@ -1,7 +1,6 @@
 .loadingImage {
   width: 100%;
   height: 100%;
-
   animation: rotate 2s infinite;
 }
 
@@ -13,5 +12,4 @@
   100% {
     transform: rotate(360deg);
   }
-
 }

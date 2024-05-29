@@ -1,73 +1,36 @@
-import { ReactNode, createContext, useEffect, useState } from 'react'
-
+import { createContext, useEffect, useState } from 'react'
 import socketClient from '../services/socket'
-
 import boardRouter from './boardRouter'
 
-interface socketContextProviderParamsInterface {
-  children: ReactNode
-}
-interface socketContextProviderValuesInterface {
-  inGame: boolean,
-  setGamemode: (mode: "multiplayer" | "algoritmo") => void,
-  gamemode: "multiplayer" | "algoritmo",
-  gamedata: string[],
-  findGame: () => void,
-  submitMove: (GameId: number) => void,
-  isMyTurn: boolean
-}
-interface playerInterface {
-  type: "player" | "algorithm",
-  id: number | null,
-  username: string | null
-}
-interface gameInfosInterface {
-  mode: "multiplayer" | "algoritmo",
-  o_player: playerInterface | null,
-  x_player : playerInterface | null,
-  id: string,
-  current: "x" | "o",
-}
-interface newGameDataInterface {
-  data: "",
-  gameInfos: gameInfosInterface
-}
-interface newMoveDataInterface {
-  new_data: ""
-}
-interface endGameEventInterface {
-  result: "win"|"tie",
-  winner: "x"|"o"|""
-}
+import {
+  socketContextProviderParamsInterface,
+  socketContextProviderValuesInterface,
+  gameInfosInterface,
+  newGameDataInterface,
+  endGameEventInterface,
+  newMoveDataInterface
+} from "../@types"
 
-export const GameSocketContext = createContext({} as socketContextProviderValuesInterface)
+export const GameContext = createContext({} as socketContextProviderValuesInterface)
 
-export function GameSocketProvider({ children }: socketContextProviderParamsInterface) {
+export function GameContextProvider({ children }: socketContextProviderParamsInterface) {
 
   const [inGame, setInGame] = useState<boolean>(false)
   const [gamemode, setGamemode] = useState<"multiplayer" | "algoritmo">("algoritmo")
   const [findingGame, setFindingGame] = useState<boolean>(false)
   const [gamedata, setGamedata] = useState<string[]>([])
-  const [gameInfos, setGameInfos] = useState<gameInfosInterface|null>(null)
+  const [gameInfos, setGameInfos] = useState<gameInfosInterface | null>(null)
   const [isMyTurn, setIsMyTurn] = useState<boolean>(true)
   const [socket, setSocket] = useState<any>()
 
   function findGame() {
     setFindingGame(true);
-    socketClient.emit("searching_new_game", {
-      gamemode
-    })
+    socketClient.emit("searching_new_game", { gamemode })
   }
 
   function submitMove(position: number) {
-
-    if (!inGame || !gameInfos) {
-      return alert("Algo de inesperado ocorreu")
-    }
-    socketClient.emit("move", {
-      gameId: gameInfos.id,
-      position
-    })
+    if (!inGame || !gameInfos) { return alert("Algo de inesperado ocorreu") }
+    socketClient.emit("move", { gameId: gameInfos.id, position })
 
     const gameDataClone = [...gamedata]
     gameDataClone[position] = "x"
@@ -85,9 +48,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
     }
 
     socket?.on("new_move", onNewMove)
-    return () => {
-      socket?.off("new_move", onNewMove)
-    }
+    return () => { socket?.off("new_move", onNewMove) }
   }, [gameInfos, gamedata, socket])
 
   useEffect(() => {
@@ -106,19 +67,15 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
     }
     function onEndGame(data: endGameEventInterface) {
       setTimeout(() => {
-        if (data.result == "win"){
-          alert(`Temos um vencedor! Parabens, ${data.winner}`)
-        }
-        if(data.result == "tie"){
-          alert("Temos um empate. Boa sorte na próxima!")
-        }
+        if (data.result == "win") { alert(`Temos um vencedor! Parabens, ${data.winner}`) }
+        if (data.result == "tie") { alert("Temos um empate. Boa sorte na próxima!") }
         setInGame(false)
         setGamedata([])
         setGameInfos(null)
         boardRouter.navigate("/encontrar-partida")
       }, 1000)
     }
-    
+
     socketClient.on("bad", onBad)
     socketClient.on("new_game", onNewGame)
     socketClient.on("end_game", onEndGame)
@@ -131,7 +88,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
   }, [])
 
   return (
-    <GameSocketContext.Provider value={{
+    <GameContext.Provider value={{
       inGame,
       gamemode,
       setGamemode,
@@ -141,7 +98,7 @@ export function GameSocketProvider({ children }: socketContextProviderParamsInte
       isMyTurn
     }}>
       {children}
-    </GameSocketContext.Provider>
+    </GameContext.Provider>
   )
 }
 
