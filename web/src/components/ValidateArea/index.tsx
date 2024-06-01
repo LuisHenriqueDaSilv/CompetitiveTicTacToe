@@ -8,7 +8,7 @@ export default function ValidateArea() {
 
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)]
 
-  const { validateEmail, fetchPlayerData } = useContext(AuthenticationContext)
+  const { validateEmail, fetchPlayerData, saveJwt } = useContext(AuthenticationContext)
   const { state } = useLocation()
   const navigate = useNavigate()
 
@@ -44,7 +44,9 @@ export default function ValidateArea() {
       code: validationCode.join(""),
       email: state.email
     }).then(async (response) => {
-      await fetchPlayerData(response.data.authentication.token)
+      const jwt = response.data.authentication.token
+      await fetchPlayerData(jwt)
+      saveJwt(jwt)
       setIsLoading(false)
       navigate("/encontrar-partida")
 

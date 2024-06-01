@@ -20,7 +20,7 @@ export default function FindGameMenu() {
             <p>Inicie uma partida contra nosso algoritmo clicando no botão abaixo</p>
             <span>(Partidas contra o algoritmo não contam para o rank)</span>
           </>
-        ) : ( <p>compita contra outros jogadores pelo rank!</p>)
+        ) : ( <p>hora de testar suas habilidades jogando contra outros jogadores reais!</p>)
       }
       <button onClick={findGame}>Iniciar partida</button>
     </div>

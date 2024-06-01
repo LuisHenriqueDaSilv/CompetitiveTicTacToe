@@ -1,5 +1,6 @@
-import { ReactNode, createContext, useState } from "react"
+import { ReactNode, createContext, useEffect, useState } from "react"
 import { axiosClient } from "../services/axios"
+import { useCookies } from 'react-cookie'
 import boardRouter from './boardRouter'
 
 import {
@@ -12,33 +13,46 @@ import {
 export const AuthenticationContext = createContext({} as AuthencationContextValuesInterface)
 export function AuthenticationContextProvider({ children }: { children: ReactNode }) {
 
+  const [cookies, setCookies] = useCookies()
+
   const [authenticated, setAuthenticated] = useState<boolean>(false)
-  const [playerInfos, setUserinfos] = useState<PlayerInterface | null>(null)
+  const [playerInfos, setPlayerInfos] = useState<PlayerInterface | null>(null)
+  const [loadingAuthentication, setLoadingAuthentication] = useState<boolean>(true)
 
   function login() {
   }
 
   function logout() {
+    setCookies("authorization_token", "")
+    setAuthenticated(false)
+    setPlayerInfos(null)
+  }
+
+  async function saveJwt(token: string) {
+    setCookies("authorization_token", token)
   }
 
   async function fetchPlayerData(token: string) {
-    axiosClient.get("/autenticado/jogador", {
+    setLoadingAuthentication(true)
+    await axiosClient.get("/autenticado/jogador", {
       headers: {
         Authorization: `bearer ${token}`
       }
     }).then((response) => {
-      setAuthenticated(true)
-      setUserinfos({
+      setPlayerInfos({
         games: 0,
         username: response.data.username,
         wins: 0
       })
+      setAuthenticated(true)
     }).catch((error) => {
       if (error.response && error.response.status == 401) {
         boardRouter.navigate("/criar-conta")
       }
       setAuthenticated(false)
     })
+    setLoadingAuthentication(true)
+
   }
   async function signup({ email, password, username }: SignupParamInterface) {
     const formData = new FormData()
@@ -54,21 +68,24 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
     return axiosClient.post("/autenticacao/validar", formData)
   }
 
-  function getJwt() {
-    return null
-  }
+  useEffect(() => {
+    const jwt = cookies["authorization_token"]
+    if (!jwt) { return }
+    fetchPlayerData(jwt)
+  }, [])
 
   return (
     <AuthenticationContext.Provider
       value={{
         authenticated,
-        getJwt,
         login,
         logout,
         signup,
         validateEmail,
         fetchPlayerData,
-        playerInfos
+        playerInfos,
+        saveJwt,
+        loadingAuthentication
       }}
     >
       {children}

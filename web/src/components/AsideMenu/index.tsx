@@ -10,16 +10,28 @@ import { AuthenticationContext } from '../../contexts/authenticationContext'
 import boardRouter from '../../contexts/boardRouter'
 
 import styles from './styles.module.scss'
+import LoadingSpinner from '../LoadingSpinner'
 
 export default function AsideMenu() {
 
+  const {
+    authenticated,
+    playerInfos,
+    logout,
+    loadingAuthentication
+  } = useContext(AuthenticationContext)
   const { gamemode, setGamemode } = useContext(GameContext)
-  const { authenticated, playerInfos } = useContext(AuthenticationContext)
 
   function handleChangeGameMode(nextGamemode: "algoritmo" | "multiplayer") {
-    if (nextGamemode == gamemode) return 
+    if (nextGamemode == gamemode) return
     setGamemode(nextGamemode)
     boardRouter.navigate("/encontrar-partida")
+  }
+
+  function handleLogout() {
+    const confirmation = confirm(`Deseja sair do seu perfil?`)
+    if (!confirmation) { return }
+    logout()
   }
 
   return (
@@ -62,30 +74,32 @@ export default function AsideMenu() {
       </section>
       <section className={styles.userSection}>
         {
-          authenticated ? (
-            <>
-              <div className={styles.userName}>
-                <h1>{playerInfos?.username}</h1>
-                <button>
-                  <img src={EditIcon} alt="editar" />
-                </button>
-                <button>
-                  <img src={ExitIcon} alt="sair" />
-                </button>
-              </div>
+          loadingAuthentication ? (<LoadingSpinner/>) : (
+            authenticated ? (
+              <>
+                <div className={styles.userName}>
+                  <h1>{playerInfos?.username}</h1>
+                  <button>
+                    <img src={EditIcon} alt="editar" />
+                  </button>
+                  <button onClick={handleLogout}>
+                    <img src={ExitIcon} alt="sair" />
+                  </button>
+                </div>
 
-              <div className={styles.info}>
-                <img src={TrophyIcon} />
-                <p>vitórias multiplayer</p>
-                <span>{playerInfos?.wins}</span>
-              </div>
-              <div className={styles.info}>
-                <img src={PlayIcon} />
-                <p>partidas multiplayer</p>
-                <span>{playerInfos?.games}</span>
-              </div>
-            </>
-          ) : null
+                <div className={styles.info}>
+                  <img src={TrophyIcon} />
+                  <p>vitórias multiplayer</p>
+                  <span>{playerInfos?.wins}</span>
+                </div>
+                <div className={styles.info}>
+                  <img src={PlayIcon} />
+                  <p>partidas multiplayer</p>
+                  <span>{playerInfos?.games}</span>
+                </div>
+              </>
+            ) : null
+          )
         }
       </section>
     </aside>

@@ -13,12 +13,13 @@ export interface ValidateParamInterface {
 export interface AuthencationContextValuesInterface {
   login: () => void,
   logout: () => void,
-  getJwt: () => string | null,
   authenticated: boolean,
   fetchPlayerData: (token: string) => void,
   signup: (param: SignupParamInterface) => AxiosPromise,
   validateEmail: (param:ValidateParamInterface) => AxiosPromise,
-  playerInfos: PlayerInterface|null
+  playerInfos: PlayerInterface|null,
+  saveJwt: (token: string) => void,
+  loadingAuthentication: boolean
 }
 
 export interface PlayerInterface {
