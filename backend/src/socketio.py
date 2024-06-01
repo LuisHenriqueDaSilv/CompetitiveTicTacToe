@@ -33,5 +33,6 @@ async def handle_player_searching_game(sid, data):
 @sio.on("move")
 async def handle_move(sid, data):
   if sid not in GameMemory.players_in_game:
-    return await sio.emit("bad", "você não esta em uma partida", to=sid)
+    await sio.emit("bad", "você não esta em uma partida", to=sid)
+    return 
   await GameUseCase.handle_move(sid, data)

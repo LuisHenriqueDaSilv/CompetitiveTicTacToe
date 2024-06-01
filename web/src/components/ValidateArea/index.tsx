@@ -53,13 +53,17 @@ export default function ValidateArea() {
     }).catch((error) => {
       setIsLoading(false)
       if (error.response && error.response.status == 400) {
-        return setError(error.response.data.detail)
+        setError(error.response.data.detail)
+        return
       }
       setError("algo de inesperado ocorreu, tente novamente mais tarde")
     })
   }
 
-  if (!state) { return navigate("/") }
+  if (!state) { 
+    navigate("/") 
+    return
+  }
 
   return (
     <div className={styles.container}>

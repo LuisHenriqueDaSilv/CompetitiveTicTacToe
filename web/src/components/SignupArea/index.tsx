@@ -35,9 +35,11 @@ export default function SignupArea() {
       setIsLoading(false)
       if (error.response && error.response.status == 400) {
         if (error.response.data.detail == "já existe um processo de validação com este email, verifique sua caixa de entrada") {
-          return navigate("/validar", { state: { email } })
+          navigate("/validar", { state: { email } })
+          return
         }
-        return setError(error.response.data.detail)
+        setError(error.response.data.detail)
+        return
       }
       setError("algo de inesperado ocorreu, tente novamente mais tarde")
     })

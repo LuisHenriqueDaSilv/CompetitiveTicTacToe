@@ -10,7 +10,10 @@ export default function FindGameMenu() {
   const { gamemode, findGame} = useContext(GameContext)
   const {authenticated} = useContext(AuthenticationContext)
 
-  if(!authenticated && gamemode == "multiplayer")return navigate("/criar-conta")
+  if(!authenticated && gamemode == "multiplayer"){
+    navigate("/criar-conta")
+    return
+  } 
 
   return (
     <div className={styles.container}>

@@ -69,7 +69,9 @@ class GameUseCases():
     )  
     
     result = self.verify_result(game["data"])
-    if not result is None: return await self.handle_result(game, result)
+    if not result is None: 
+      await self.handle_result(game, result)
+      return
     
     self.game_memory.running_games[game["id"]]["current"] = "x" if game["current"]=="o" else "o"
   
@@ -93,7 +95,7 @@ class GameUseCases():
     
   async def handle_result(self, game, result):
     self.delete_game(game=game)
-    return await self.sio.emit("end_game", {
+    await self.sio.emit("end_game", {
       "result": result,
       "winner": game["current"] if result == "win" else None
       }, room=game["id"])
@@ -105,29 +107,41 @@ class GameUseCases():
     try: 
       position = int(position)
     except ValueError:
-      return await self.sio.emit("bad", "a posição precisa ser um inteiro", to=sid)
+      await self.sio.emit("bad", "a posição precisa ser um inteiro", to=sid)
+      return
     
-    if position is None or (position < 0 or position > 9): return await self.sio.emit("bad", "posição invalida", to=sid)
+    if position is None or (position < 0 or position > 9): 
+      await self.sio.emit("bad", "posição invalida", to=sid)
+      return
     
     game_on_memory = self.game_memory.running_games.get(game_id, None) 
-    if game_on_memory is None: return await self.sio.emit("bad", "id de partida invalida", to=sid)
+    if game_on_memory is None: 
+      await self.sio.emit("bad", "id de partida invalida", to=sid)
+      return
     
     player_is_x = game_on_memory["x_player_sid"]==sid
     player_is_o = game_on_memory["o_player_sid"]==sid
-    if not player_is_x and not player_is_o: return await self.sio.emit("bad", "a partida informada não é sua", to=sid)
+    if not player_is_x and not player_is_o: 
+      await self.sio.emit("bad", "a partida informada não é sua", to=sid)
+      return
 
     if (player_is_x and game_on_memory["current"] != "x") or (player_is_o and game_on_memory["current"] != "o"):
-      return await self.sio.emit("bad", "Não é a sua vez de jogar", to=sid)
+      await self.sio.emit("bad", "Não é a sua vez de jogar", to=sid)
+      return
     
     game_data = list(game_on_memory["data"])
-    if game_data[position] != " ": return await self.sio.emit("bad", "posição invalida", to=sid)
+    if game_data[position] != " ":  
+      await self.sio.emit("bad", "posição invalida", to=sid)
+      return
     
     game_data[position] = game_on_memory["current"]
     new_game_data = ''.join(game_data)
     game_on_memory["data"] = new_game_data
     
     result = self.verify_result(game_on_memory["data"])
-    if not result is None: return await self.handle_result(game_on_memory, result)
+    if not result is None: 
+      await self.handle_result(game_on_memory, result)
+      return
     
     game_on_memory["current"] = "x" if game_on_memory["current"]=="o" else "o"  
     if game_on_memory["mode"] == "algoritmo": await self.algorithm_move(game_on_memory)
