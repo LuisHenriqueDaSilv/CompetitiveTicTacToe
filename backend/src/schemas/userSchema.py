@@ -14,7 +14,7 @@ class UserSchema(BaseModel):
   @field_validator("username")
   @staticmethod
   def validate_username(username):
-    if not re.match("^([a-z]|[A-Z]|[0-9])+$", username) or len(username) > 10:
+    if not re.match("^([a-z]|[A-Z]|[0-9]|[\s])+$", username) or len(username) > 10:
       raise HTTPException(
         detail="Nome de usuário invalido",
         status_code=status.HTTP_400_BAD_REQUEST
