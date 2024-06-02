@@ -34,17 +34,18 @@ export interface PlayerInterface {
   games: number
 }
 
-export interface socketContextProviderParamsInterface {
+export interface gameContextProviderParamsInterface {
   children: ReactNode
 }
-export interface socketContextProviderValuesInterface {
+export interface gameContextProviderValuesInterface {
   inGame: boolean,
   setGamemode: (mode: "multiplayer" | "algoritmo") => void,
   gamemode: "multiplayer" | "algoritmo",
   gamedata: string[],
   findGame: () => void,
   submitMove: (GameId: number) => void,
-  isMyTurn: boolean
+  isMyTurn: boolean,
+  isFindingGame: boolean
 }
 export interface playerInterface {
   type: "player" | "algorithm",

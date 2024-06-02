@@ -3,28 +3,28 @@ import socketClient from '../services/socket'
 import boardRouter from './boardRouter'
 
 import {
-  socketContextProviderParamsInterface,
-  socketContextProviderValuesInterface,
+  gameContextProviderValuesInterface,
+  gameContextProviderParamsInterface,
   gameInfosInterface,
   newGameDataInterface,
   endGameEventInterface,
   newMoveDataInterface
 } from "../@types"
 
-export const GameContext = createContext({} as socketContextProviderValuesInterface)
+export const GameContext = createContext({} as gameContextProviderValuesInterface)
 
-export function GameContextProvider({ children }: socketContextProviderParamsInterface) {
+export function GameContextProvider({ children }: gameContextProviderParamsInterface) {
 
   const [inGame, setInGame] = useState<boolean>(false)
   const [gamemode, setGamemode] = useState<"multiplayer" | "algoritmo">("algoritmo")
-  const [findingGame, setFindingGame] = useState<boolean>(false)
+  const [isFindingGame, setIsFindingGame] = useState<boolean>(false)
   const [gamedata, setGamedata] = useState<string[]>([])
   const [gameInfos, setGameInfos] = useState<gameInfosInterface | null>(null)
   const [isMyTurn, setIsMyTurn] = useState<boolean>(true)
   const [socket, setSocket] = useState<any>()
 
   function findGame() {
-    setFindingGame(true);
+    setIsFindingGame(true);
     socketClient.emit("searching_new_game", { gamemode })
   }
 
@@ -61,7 +61,7 @@ export function GameContextProvider({ children }: socketContextProviderParamsInt
       setInGame(true)
       setGamedata(data.data.split(""))
       setGameInfos(data.gameInfos)
-      setFindingGame(false)
+      setIsFindingGame(false)
       setIsMyTurn(true)
       boardRouter.navigate("/game")
     }
@@ -95,7 +95,8 @@ export function GameContextProvider({ children }: socketContextProviderParamsInt
       gamedata,
       findGame,
       submitMove,
-      isMyTurn
+      isMyTurn,
+      isFindingGame
     }}>
       {children}
     </GameContext.Provider>

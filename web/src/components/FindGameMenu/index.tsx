@@ -4,11 +4,12 @@ import { useNavigate } from "react-router"
 import { GameContext } from "../../contexts/gameContext"
 import { AuthenticationContext } from "../../contexts/authenticationContext"
 import styles from './styles.module.scss'
+import LoadingSpinner from "../LoadingSpinner"
 
 export default function FindGameMenu() {
 
   const navigate = useNavigate()
-  const { gamemode, findGame } = useContext(GameContext)
+  const { gamemode, findGame, isFindingGame } = useContext(GameContext)
   const { authenticated } = useContext(AuthenticationContext)
 
   if (!authenticated && gamemode == "multiplayer") {
@@ -19,14 +20,23 @@ export default function FindGameMenu() {
   return (
     <div className={styles.container}>
       {
-        gamemode == "algoritmo" ? (
+        isFindingGame ? (
           <>
-            <p>Inicie uma partida contra nosso algoritmo clicando no botão abaixo</p>
-            <span>(Partidas contra o algoritmo não contam para o rank)</span>
+            <p> Procurando partida </p>
+            <div className={styles.loadingGameIcon}>
+              <LoadingSpinner />
+            </div>
           </>
-        ) : (<p>hora de testar suas habilidades jogando contra outros jogadores reais!</p>)
+        ) : (
+          gamemode == "algoritmo" ? (
+            <>
+              <p>Inicie uma partida contra nosso algoritmo clicando no botão abaixo</p>
+              <span>(Partidas contra o algoritmo não contam para o rank)</span>
+            </>
+          ) : (<p>hora de testar suas habilidades jogando contra outros jogadores reais!</p>)
+        )
       }
-      <button onClick={findGame}>Iniciar partida</button>
+      <button onClick={findGame}>{isFindingGame? "cancelar":"iniciar partida"}</button>
     </div>
   )
 }
