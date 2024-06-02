@@ -1,7 +1,7 @@
 import { FormEvent, KeyboardEvent, useContext, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
-import { AuthenticationContext } from "../../contexts/authenticationContext"
-import LoadingSpinner from "../LoadingSpinner"
+import { AuthenticationContext } from "../../../contexts/authenticationContext"
+import LoadingSpinner from "../../LoadingSpinner"
 import styles from './styles.module.scss'
 
 export default function ValidateArea() {
@@ -60,8 +60,8 @@ export default function ValidateArea() {
     })
   }
 
-  if (!state) { 
-    navigate("/") 
+  if (!state) {
+    navigate("/")
     return
   }
 
@@ -69,10 +69,10 @@ export default function ValidateArea() {
     <div className={styles.container}>
       <h2>Só mais uma etapa!</h2>
       <p>
-        antes de iniciar os jogos é necessário validar que o email informado é 
-        realmente seu! para isso, verifique sua caixa de entrada de email e 
+        antes de iniciar os jogos é necessário validar que o email informado é
+        realmente seu! para isso, verifique sua caixa de entrada de email e
         informe o código de segurança enviado (Lembre-se de chegar a caixa de spam)
-        </p>
+      </p>
       {
         error ? (<p className={styles.errorMessage}>{error}</p>) : null
       }

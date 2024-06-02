@@ -1,4 +1,4 @@
-import BoardRouter from "./contexts/boardRouter"
+import BoardRouter from "./components/Board/router"
 import AsideMenu from './components/AsideMenu'
 import { RouterProvider } from 'react-router-dom'
 import styles from './styles/appStyles.module.scss'

@@ -1,7 +1,7 @@
 import { ReactNode, createContext, useEffect, useState } from "react"
 import { axiosClient } from "../services/axios"
 import { useCookies } from 'react-cookie'
-import boardRouter from './boardRouter'
+import boardRouter from '../components/Board/router'
 
 import {
   AuthencationContextValuesInterface,
@@ -26,6 +26,7 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
     setCookies("authorization_token", "")
     setAuthenticated(false)
     setPlayerInfos(null)
+    boardRouter.navigate("/")
   }
 
   async function saveJwt(token: string) {
@@ -46,16 +47,14 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
       })
       setAuthenticated(true)
     }).catch((error) => {
-      if (error.response && error.response.status == 401) {
-        boardRouter.navigate("/criar-conta")
-      }
+      if (error.response && error.response.status == 401) { logout() }
       setAuthenticated(false)
     })
     setLoadingAuthentication(false)
 
   }
-  async function signup(values: unknown){
-    const {email, password, username } = values as SignupParamInterface
+  async function signup(values: unknown) {
+    const { email, password, username } = values as SignupParamInterface
     const formData = new FormData()
     formData.append("email", email)
     formData.append("password", password)

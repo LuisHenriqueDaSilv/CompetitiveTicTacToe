@@ -1,6 +1,6 @@
 import { useContext } from "react"
-import { GameContext } from "../../contexts/gameContext"
-import { AuthenticationContext } from "../../contexts/authenticationContext"
+import { GameContext } from "../../../contexts/gameContext"
+import { AuthenticationContext } from "../../../contexts/authenticationContext"
 import { useNavigate } from "react-router"
 import styles from './styles.module.scss'
 

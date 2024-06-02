@@ -1,13 +1,13 @@
 import { useContext, useRef } from 'react'
 import { useNavigate } from 'react-router'
-import { GameContext } from '../../contexts/gameContext'
-import { AuthenticationContext } from '../../contexts/authenticationContext'
-import { AuthenticationFormHandle } from '../../@types'
+import { GameContext } from '../../../contexts/gameContext'
+import { AuthenticationContext } from '../../../contexts/authenticationContext'
+import { AuthenticationFormHandle } from '../../../@types'
 import AuthenticationForm from '../AuthenticationForm'
 
-import EmailIcon from '../../assets/email.svg'
-import PasswordIcon from '../../assets/password.svg'
-import UserIcon from '../../assets/user.svg'
+import EmailIcon from '../../../assets/email.svg'
+import PasswordIcon from '../../../assets/password.svg'
+import UserIcon from '../../../assets/user.svg'
 import styles from './styles.module.scss'
 
 export default function SignupArea() {

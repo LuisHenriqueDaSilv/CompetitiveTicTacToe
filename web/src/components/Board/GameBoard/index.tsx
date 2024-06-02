@@ -1,7 +1,7 @@
 import { useContext } from "react"
-import { GameContext } from "../../contexts/gameContext"
+import { GameContext } from "../../../contexts/gameContext"
 import styles from './styles.module.scss'
-import MedalIcon from '../../assets/medal.svg'
+import MedalIcon from '../../../assets/medal.svg'
 
 export default function GameBoard() {
 

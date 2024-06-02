@@ -1,6 +1,6 @@
 import { FormEvent, useImperativeHandle, useState, forwardRef } from "react";
-import { FormPropsInterface, AuthenticationFormHandle } from "../../@types"
-import LoadingSpinner from "../LoadingSpinner";
+import { FormPropsInterface, AuthenticationFormHandle } from "../../../@types"
+import LoadingSpinner from "../../LoadingSpinner";
 import styles from './styles.module.scss'
 
 export default forwardRef<AuthenticationFormHandle, FormPropsInterface>((props, ref) => {
