@@ -3,23 +3,30 @@ import { useNavigate } from "react-router";
 
 import AuthenticationForm from "../AuthenticationForm";
 import { AuthenticationContext } from "../../contexts/authenticationContext";
+import { HandleSucessLoginInterface } from "../../@types";
+
 import styles from './styles.module.scss'
 
 import EmailIcon from '../../assets/email.svg'
 import PasswordIcon from '../../assets/password.svg'
 
-export default function LoginArea(){
+export default function LoginArea() {
   const navigate = useNavigate()
 
-  const {login} = useContext(AuthenticationContext)
+  const { login, fetchPlayerData } = useContext(AuthenticationContext)
+
+  async function handleSucessLogin(response:HandleSucessLoginInterface){
+    await fetchPlayerData(response.data.token)
+    navigate("/encontrar-partida")
+  }
   return (
     <AuthenticationForm
       buttonLabel="entrar"
       footer={
-        <p className={styles.formFooter}> ou já tem uma conta? <button onClick={() => { navigate("/criar-conta") }}>Clique aqui</button></p>
+        <p className={styles.formFooter}> ainda não tem uma conta? <button onClick={() => { navigate("/criar-conta") }}>registre-se</button></p>
       }
       submitAction={login}
-      sucessCallback={() => {alert("Sucesso")}}
+      sucessCallback={handleSucessLogin}
       title="Bem vindo de volta!"
       inputs={[
         {
@@ -32,6 +39,7 @@ export default function LoginArea(){
         {
           footer: <p className={styles.inputFooter}><button>esqueceu sua senha?</button></p>,
           icon: PasswordIcon,
+          type:"password",
           name: "password",
           placeHolder: "senha",
           maxLength: 10

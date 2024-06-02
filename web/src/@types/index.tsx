@@ -89,3 +89,10 @@ export interface FormPropsInterface extends FormProps {
 export interface AuthenticationFormHandle {
   data: { [key: string]: string };
 };
+
+export interface HandleSucessLoginInterface extends AxiosResponse {
+    data: {
+      token: string,
+      exp: string
+    }
+}
