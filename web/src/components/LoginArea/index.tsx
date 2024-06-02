@@ -13,10 +13,12 @@ import PasswordIcon from '../../assets/password.svg'
 export default function LoginArea() {
   const navigate = useNavigate()
 
-  const { login, fetchPlayerData } = useContext(AuthenticationContext)
+  const { login, fetchPlayerData, saveJwt } = useContext(AuthenticationContext)
 
   async function handleSucessLogin(response:HandleSucessLoginInterface){
-    await fetchPlayerData(response.data.token)
+    const jwtToken = response.data.token
+    saveJwt(jwtToken)
+    await fetchPlayerData(jwtToken)
     navigate("/encontrar-partida")
   }
   return (
