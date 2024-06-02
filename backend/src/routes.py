@@ -4,9 +4,13 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from .depends import get_db_session
-from .schemas import UserSchema, UserValidationSchema, UserResendValidationCodeSchema
 from .services import JWTService, EmailService
 from .useCases import UserUseCases
+from .schemas import \
+  UserSchema, \
+  UserValidationSchema, \
+  UserResendValidationCodeSchema, \
+  UserLoginSchema
 
 
 # Email server settings
@@ -77,7 +81,7 @@ def user_resend_validation_code(
   
 @authentication_router.post("/login")
 def user_login(
-  userData: UserSchema=Depends(UserSchema),
+  userData: UserLoginSchema=Depends(UserLoginSchema),
   dbSession: Session=Depends(get_db_session)
 ) -> JSONResponse:
   userUseCase= UserUseCases(dbSession=dbSession)

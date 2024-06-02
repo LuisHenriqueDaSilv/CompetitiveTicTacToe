@@ -13,7 +13,7 @@ from src.utils import send_validation_email
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 
 class UserUseCases: 
-  def __init__(self, dbSession:Session, emailService:EmailService):
+  def __init__(self, dbSession:Session, emailService:EmailService=None):
     self.emailService = emailService
     self.dbSession = dbSession
 
@@ -119,22 +119,22 @@ class UserUseCases:
     return "código reenviado"
 
   def user_login(self, user: UserSchema):
-    user_on_db:UserSchema = self.dbSession.query(UserModel).filter_by(username=user.username).first()
+    user_on_db:UserSchema = self.dbSession.query(UserModel).filter_by(email=user.email).first()
     
     if user_on_db is None:
       raise HTTPException(
-        detail="nome de usuário ou senha invalido",
-        status_code=status.HTTP_401_UNAUTHORIZED
+        detail="email ou senha não encontrados",
+        status_code=status.HTTP_400_BAD_REQUEST
       )
       
     password_is_valid = crypt_context.verify(user.password, user_on_db.password)
     if not password_is_valid:
       raise HTTPException(
-        detail="nome de usuário ou senha invalido",
-        status_code=status.HTTP_401_UNAUTHORIZED
+        detail="email ou senha não encontrados",
+        status_code=status.HTTP_400_BAD_REQUEST
       )
       
-    authorization = JWTService.encode(user.username)
+    authorization = JWTService.encode(user_on_db.username)
     
     return authorization
   
