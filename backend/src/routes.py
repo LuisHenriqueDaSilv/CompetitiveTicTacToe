@@ -41,7 +41,7 @@ def user_register(
     content={
       "detail":creation_status,
     },
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_200_OK
   )
 
 @authentication_router.post("/validar")
@@ -72,7 +72,7 @@ def user_resend_validation_code(
     content={
       "detail":"sucesso",
     },
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_200_OK
   )
   
 @authentication_router.post("/login")

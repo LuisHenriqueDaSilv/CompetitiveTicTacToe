@@ -24,7 +24,7 @@ class UserUseCases:
     if exist_user_on_db is not None:
       if not exist_user_on_db.validated and exist_user_on_db.email == user.email:
         raise HTTPException(
-          status_code=status.HTTP_400_BAD_REQUEST,
+          status_code=status.HTTP_200_OK,
           detail="já existe um processo de validação com este email, verifique sua caixa de entrada"
         )
       if exist_user_on_db.email == user.email:
