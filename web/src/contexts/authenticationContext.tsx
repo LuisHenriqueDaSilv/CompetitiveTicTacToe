@@ -1,10 +1,11 @@
 import { ReactNode, createContext, useEffect, useState } from "react"
 import { axiosClient } from "../services/axios"
 import { useCookies } from 'react-cookie'
-import boardRouter from '../components/Board/router'
+import boardRouter from './boardRouter'
 
 import {
   AuthencationContextValuesInterface,
+  LoginParamInterface,
   PlayerInterface,
   SignupParamInterface,
   ValidateParamInterface
@@ -19,7 +20,12 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
   const [playerInfos, setPlayerInfos] = useState<PlayerInterface | null>(null)
   const [loadingAuthentication, setLoadingAuthentication] = useState<boolean>(false)
 
-  function login() {
+  function login(data: unknown) {
+    const {email, password} = data as LoginParamInterface
+    const formData = new FormData()
+    formData.append("email", email)
+    formData.append("password", password)
+    return axiosClient.post("/autenticacao/login", formData)
   }
 
   function logout() {

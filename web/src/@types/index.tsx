@@ -7,12 +7,17 @@ export interface SignupParamInterface {
   email: string,
   password: string
 }
+
+export interface LoginParamInterface {
+  email: string,
+  password: string
+}
 export interface ValidateParamInterface {
   email: string,
   code: string
 }
 export interface AuthencationContextValuesInterface {
-  login: () => void,
+  login: (param: unknown) => AxiosPromise,
   logout: () => void,
   authenticated: boolean,
   fetchPlayerData: (token: string) => void,

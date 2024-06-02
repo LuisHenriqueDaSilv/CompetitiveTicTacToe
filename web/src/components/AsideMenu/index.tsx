@@ -7,7 +7,7 @@ import PlayIcon from '../../assets/play.svg'
 
 import { GameContext } from '../../contexts/gameContext'
 import { AuthenticationContext } from '../../contexts/authenticationContext'
-import boardRouter from '../Board/router'
+import boardRouter from '../../contexts/boardRouter'
 
 import styles from './styles.module.scss'
 import LoadingSpinner from '../LoadingSpinner'

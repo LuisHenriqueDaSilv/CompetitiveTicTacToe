@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from 'react'
 import socketClient from '../services/socket'
-import boardRouter from '../components/Board/router'
+import boardRouter from './boardRouter'
 
 import {
   socketContextProviderParamsInterface,

@@ -1,8 +1,9 @@
 import { FormEvent, KeyboardEvent, useContext, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
-import { AuthenticationContext } from "../../../contexts/authenticationContext"
-import LoadingSpinner from "../../LoadingSpinner"
-import styles from './styles.module.scss'
+
+import { AuthenticationContext } from "../../contexts/authenticationContext"
+import LoadingSpinner from "../LoadingSpinner"
+import styles from "./styles.module.scss"
 
 export default function ValidateArea() {
 
