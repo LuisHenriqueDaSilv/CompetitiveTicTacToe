@@ -1,5 +1,6 @@
-import {AxiosPromise} from 'axios'
-import {ReactNode} from 'react'
+import { AxiosPromise, AxiosResponse } from 'axios'
+import { ReactNode } from 'react'
+import { FormProps } from 'react-router-dom'
 
 export interface SignupParamInterface {
   username: string,
@@ -15,9 +16,9 @@ export interface AuthencationContextValuesInterface {
   logout: () => void,
   authenticated: boolean,
   fetchPlayerData: (token: string) => void,
-  signup: (param: SignupParamInterface) => AxiosPromise,
-  validateEmail: (param:ValidateParamInterface) => AxiosPromise,
-  playerInfos: PlayerInterface|null,
+  signup: (param: unknown) => AxiosPromise,
+  validateEmail: (param: ValidateParamInterface) => AxiosPromise,
+  playerInfos: PlayerInterface | null,
   saveJwt: (token: string) => void,
   loadingAuthentication: boolean
 }
@@ -48,7 +49,7 @@ export interface playerInterface {
 export interface gameInfosInterface {
   mode: "multiplayer" | "algoritmo",
   o_player: playerInterface | null,
-  x_player : playerInterface | null,
+  x_player: playerInterface | null,
   id: string,
   current: "x" | "o",
 }
@@ -60,6 +61,26 @@ export interface newMoveDataInterface {
   new_data: ""
 }
 export interface endGameEventInterface {
-  result: "win"|"tie",
-  winner: "x"|"o"|""
+  result: "win" | "tie",
+  winner: "x" | "o" | ""
 }
+
+export interface FormPropsInterface extends FormProps {
+  title: string,
+  buttonLabel: string,
+  inputs: {
+    name: string,
+    type?: string,
+    placeHolder: string,
+    icon: string,
+    footer: JSX.Element,
+    maxLength?: number
+  }[]
+  footer: JSX.Element,
+  submitAction: (datas: { [key: string]: string }) => AxiosPromise,
+  sucessCallback: (props: AxiosResponse) => void
+}
+
+export interface AuthenticationFormHandle {
+  data: { [key: string]: string };
+};

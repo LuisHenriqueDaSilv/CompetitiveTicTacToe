@@ -17,7 +17,7 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
 
   const [authenticated, setAuthenticated] = useState<boolean>(false)
   const [playerInfos, setPlayerInfos] = useState<PlayerInterface | null>(null)
-  const [loadingAuthentication, setLoadingAuthentication] = useState<boolean>(true)
+  const [loadingAuthentication, setLoadingAuthentication] = useState<boolean>(false)
 
   function login() {
   }
@@ -51,10 +51,11 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
       }
       setAuthenticated(false)
     })
-    setLoadingAuthentication(true)
+    setLoadingAuthentication(false)
 
   }
-  async function signup({ email, password, username }: SignupParamInterface) {
+  async function signup(values: unknown){
+    const {email, password, username } = values as SignupParamInterface
     const formData = new FormData()
     formData.append("email", email)
     formData.append("password", password)

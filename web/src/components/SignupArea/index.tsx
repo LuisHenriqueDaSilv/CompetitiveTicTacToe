@@ -1,11 +1,13 @@
-import { FormEvent, useContext, useState } from 'react'
+import { useContext, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { GameContext } from '../../contexts/gameContext'
 import { AuthenticationContext } from '../../contexts/authenticationContext'
+import { AuthenticationFormHandle } from '../../@types'
+import AuthenticationForm from '../AuthenticationForm'
+
 import EmailIcon from '../../assets/email.svg'
 import PasswordIcon from '../../assets/password.svg'
 import UserIcon from '../../assets/user.svg'
-import LoadingSpinner from '../LoadingSpinner'
 import styles from './styles.module.scss'
 
 export default function SignupArea() {
@@ -14,86 +16,47 @@ export default function SignupArea() {
   const { signup } = useContext(AuthenticationContext)
   const { gamemode } = useContext(GameContext)
 
-  const [username, setUsername] = useState<string>("")
-  const [email, setEmail] = useState<string>("")
-  const [password, setPassword] = useState<string>("")
-  const [error, setError] = useState<string | null>()
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const formRef = useRef<AuthenticationFormHandle>(null)
 
-  async function handleSignupFormSubmit(event: FormEvent) {
-    event.preventDefault()
-
-    setError(null)
-    setIsLoading(true)
-
-    if (!username || !email || !username) setError("preencha todos os campos para criar seu perfil")
-
-    signup({ email, password, username }).then(() => {
-      setIsLoading(false)
-      navigate("/validar", { state: { email } })
-    }).catch((error) => {
-      setIsLoading(false)
-      if (error.response && error.response.status == 400) {
-        if (error.response.data.detail == "já existe um processo de validação com este email, verifique sua caixa de entrada") {
-          navigate("/validar", { state: { email } })
-          return
-        }
-        setError(error.response.data.detail)
-        return
-      }
-      setError("algo de inesperado ocorreu, tente novamente mais tarde")
-    })
+  if (gamemode == "algoritmo") {
+    navigate("/encontrar-partida")
+    return
   }
 
-  if (gamemode == "algoritmo") return navigate("/encontrar-partida")
-
   return (
-    <div className={styles.container}>
-      <p>registre-se para jogar e competir contra outros jogadores!</p>
-      {
-        error ? (<p className={styles.errorMessage}>{error}</p>) : null
+    <AuthenticationForm
+      title="registre-se para jogar e competir contra outros jogadores!"
+      buttonLabel='registre-se'
+      footer={
+        <p className={styles.formFooter}> ou já tem uma conta? <button onClick={() => { navigate("/login") }}>Clique aqui</button></p>
       }
-      <form onSubmit={handleSignupFormSubmit}>
-        <div>
-          <input
-            maxLength={10}
-            required
-            //@ts-ignore
-            onInput={(event) => { setUsername(event.target.value) }}
-            value={username}
-          />
-          <img src={UserIcon} />
-          <span>Por qual nome deseja ser chamado?</span>
-          <p>este sera o nome mostrado em suas partidas e rank’s</p>
-        </div>
-        <div>
-          <input
-            required
-            //@ts-ignore
-            onInput={(event) => { setEmail(event.target.value) }}
-            value={email}
-          />
-          <img src={EmailIcon} />
-          <span> Qual é o seu email?</span>
-          <p> este sera o email utilizado para entrar em seu perfil nos próximos acessos</p>
-        </div>
-        <div>
-          <input
-            maxLength={50}
-            required
-            type='password'
-            //@ts-ignore
-            onInput={(event) => { setPassword(event.target.value) }}
-            value={password}
-          />
-          <img src={PasswordIcon} />
-          <span>Crie uma senha</span>
-        </div>
-        <button disabled={isLoading} type="submit">
-          {isLoading ? (<LoadingSpinner />) : (<>registrar-se</>)}
-        </button>
-      </form>
-      <p> ou já tem uma conta? <a href="/login">Clique aqui</a></p>
-    </div>
+      inputs={[
+        {
+          footer: <p className={styles.inputFooter}>este sera o nome mostrado em suas partidas e rankings</p>,
+          icon: UserIcon,
+          name: "username",
+          placeHolder: "por qual nome deseja ser chamado?",
+          maxLength: 10
+        },
+        {
+          footer: <p className={styles.inputFooter}>este sera o email utilizado para entrar em seu perfil nos próximos acessos</p>,
+          icon: EmailIcon,
+          name: "email",
+          placeHolder: "qual é o seu email?",
+          maxLength: 320
+        },
+        {
+          footer: <p className={styles.inputFooter}><button>esqueceu sua senha?</button></p>,
+          icon: PasswordIcon,
+          name: "password",
+          type: "password",
+          placeHolder: "digite uma senha para proteger seu perfil",
+          maxLength: 50
+        },
+      ]}
+      submitAction={signup}
+      ref={formRef}
+      sucessCallback={() => { navigate("/validar", { state: { email: formRef.current?.data.email } }) }}
+    />
   )
 }
