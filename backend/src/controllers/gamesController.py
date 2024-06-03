@@ -157,8 +157,9 @@ class GamesController():
         if (self.games_memory.running_games[game_id]["x_player_sid"] == sid or \
           self.games_memory.running_games[game_id]["o_player_sid"] == sid):
             game = self.games_memory.running_games[game_id]
-            break
-          
+            break    
+
+    if game is None: return
     if game.get("x_player_sid") is not None: del self.games_memory.players_in_game[game["x_player_sid"]]
     if game.get("o_player_sid") is not None: del self.games_memory.players_in_game[game["o_player_sid"]]
     del game
