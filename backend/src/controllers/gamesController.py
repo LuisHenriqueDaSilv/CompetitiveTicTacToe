@@ -1,20 +1,22 @@
 from socketio import AsyncServer
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
 import random
-from src.db.gamesMemoryDatabase import GamesMemoryDatabase
 from uuid import uuid4
-from src.db.models import MultiplayerGameModel
 
-class GameUseCases():
+from src.db.gamesMemoryDatabase import GamesMemoryDatabase
+
+class GamesController():
   
-  def __init__(self, game_memory:GamesMemoryDatabase, sio:AsyncServer, db_session:Session
-    ):
-    self.game_memory = game_memory
+  db_session:Session = None
+  
+  def __init__(self, games_memory:GamesMemoryDatabase, sio:AsyncServer):
+    self.games_memory = games_memory
     self.sio = sio
-    self.db_session = db_session
     
-  async def create_game(self, sid):
+  async def create(self, sid):
+    if sid in self.games_memory.players_in_game:
+      await self.sio.emit("bad", "você já esta em uma partida", to=sid)
+      return 
     
     game_uuid = uuid4().hex
     created_game = {
@@ -27,9 +29,9 @@ class GameUseCases():
       "id": game_uuid,
       "current": "x"
     }
-    self.game_memory.running_games[game_uuid] = created_game 
+    self.games_memory.running_games[game_uuid] = created_game 
     
-    self.game_memory.players_in_game[sid] = {
+    self.games_memory.players_in_game[sid] = {
       "sid":sid,
       "id": None # Adicionar ids dos usuários para funcionar em multiplayer 
     }
@@ -52,13 +54,13 @@ class GameUseCases():
       if position == " ": free_positions_indexes.append(index)
     move_position_index = random.randint(0, len(free_positions_indexes)-1)
     return free_positions_indexes[move_position_index]
-    
+  
   async def algorithm_move(self, game):
     algorithm_move_position = self.algorithm_random_position(game["data"])
     game_data = list(game["data"])
     game_data[algorithm_move_position] = game["current"]
     new_game_data = ''.join(game_data)
-    self.game_memory.running_games[game["id"]]["data"] = new_game_data
+    self.games_memory.running_games[game["id"]]["data"] = new_game_data
     
     await self.sio.emit(
       "new_move",
@@ -73,7 +75,7 @@ class GameUseCases():
       await self.handle_result(game, result)
       return
     
-    self.game_memory.running_games[game["id"]]["current"] = "x" if game["current"]=="o" else "o"
+    self.games_memory.running_games[game["id"]]["current"] = "x" if game["current"]=="o" else "o"
   
   def verify_result(self, game_data):
     game_data = list(game_data)
@@ -100,10 +102,13 @@ class GameUseCases():
       "winner": game["current"] if result == "win" else None
       }, room=game["id"])
     
-  async def handle_move(self, sid, data):
+  async def move(self, sid, data):    
+    if sid not in self.games_memory.players_in_game:
+      await self.sio.emit("bad", "você não esta em uma partida", to=sid)
+      return 
+    
     game_id = data.get("gameId")
     position = data.get("position")
-    
     try: 
       position = int(position)
     except ValueError:
@@ -114,7 +119,7 @@ class GameUseCases():
       await self.sio.emit("bad", "posição invalida", to=sid)
       return
     
-    game_on_memory = self.game_memory.running_games.get(game_id, None) 
+    game_on_memory = self.games_memory.running_games.get(game_id, None) 
     if game_on_memory is None: 
       await self.sio.emit("bad", "id de partida invalida", to=sid)
       return
@@ -148,15 +153,15 @@ class GameUseCases():
       
   def delete_game(self, sid=None, game=None):
     if game is None:
-      for game_id in self.game_memory.running_games:
-        if (self.game_memory.running_games[game_id]["x_player_sid"] == sid or \
-          self.game_memory.running_games[game_id]["o_player_sid"] == sid):
-            game = self.game_memory.running_games[game_id]
+      for game_id in self.games_memory.running_games:
+        if (self.games_memory.running_games[game_id]["x_player_sid"] == sid or \
+          self.games_memory.running_games[game_id]["o_player_sid"] == sid):
+            game = self.games_memory.running_games[game_id]
             break
           
-    if game.get("x_player_sid") is not None: del self.game_memory.players_in_game[game["x_player_sid"]]
-    if game.get("o_player_sid") is not None: del self.game_memory.players_in_game[game["o_player_sid"]]
+    if game.get("x_player_sid") is not None: del self.games_memory.players_in_game[game["x_player_sid"]]
+    if game.get("o_player_sid") is not None: del self.games_memory.players_in_game[game["o_player_sid"]]
     del game
       
-  def handle_user_disconnection(self, sid):
+  def disconnect_player(self, sid):
     self.delete_game(sid)

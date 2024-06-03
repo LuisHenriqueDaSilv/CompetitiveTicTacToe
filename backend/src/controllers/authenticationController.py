@@ -1,26 +1,27 @@
+from fastapi import HTTPException, status
+from fastapi.responses import JSONResponse  
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from fastapi import status, HTTPException
-from passlib.context import CryptContext 
 from random import randint
-from sqlalchemy import or_
+from passlib.context import CryptContext
 
 from src.db.models import UserModel
-from src.schemas import UserSchema, UserValidationSchema, UserResendValidationCodeSchema
-from src.services import JWTService, EmailService
 from src.utils import send_validation_email
+from src.schemas import UserSchema, UserValidationSchema, UserResendValidationCodeSchema
+from src.services import JWTService
 
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 
-class UserUseCases: 
-  def __init__(self, dbSession:Session, emailService:EmailService=None):
-    self.emailService = emailService
-    self.dbSession = dbSession
+class AuthenticationController():
 
-    
-  def user_register(self, user: UserSchema):
+  db_session:Session = None
 
-    exist_user_on_db = self.dbSession.query(UserModel).where(or_(UserModel.email==user.email, UserModel.username==user.username)).first()
+  def __init__(self, email_service):
+    self.email_service = email_service
+
+  def signup(self, user: UserSchema):
+    exist_user_on_db = self.db_session.query(UserModel).where(or_(UserModel.email==user.email, UserModel.username==user.username)).first()
     if exist_user_on_db is not None:
       if not exist_user_on_db.validated and exist_user_on_db.email == user.email:
         raise HTTPException(
@@ -32,7 +33,6 @@ class UserUseCases:
           status_code=status.HTTP_400_BAD_REQUEST,
           detail="já existe um jogador utilizando o email informado"
         )
-      
       if exist_user_on_db.username == user.username:
         raise HTTPException(
           status_code=status.HTTP_400_BAD_REQUEST,
@@ -47,18 +47,18 @@ class UserUseCases:
       validated=False,
       validation_code=validation_code
     )
-
+    
     try:
-      send_validation_email(self.emailService, created_user)
+      send_validation_email(self.email_service, created_user)
     except:
       raise HTTPException(
         detail="email indisponivel",
         status_code=status.HTTP_400_BAD_REQUEST
       )
-    
+
     try:
-      self.dbSession.add(created_user)
-      self.dbSession.commit()
+      self.db_session.add(created_user)
+      self.db_session.commit()
     except IntegrityError:
       raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
@@ -70,11 +70,36 @@ class UserUseCases:
         detail="erro no banco de dados"
       )
     
-    return "verifique seu email"
+    return JSONResponse(
+      content={
+        "detail":"verifique seu email",
+      },
+      status_code=status.HTTP_200_OK
+    )
   
-  def user_validate(self, user:UserValidationSchema):
-    user_on_db = self.dbSession.query(UserModel).filter_by(email=user.email, validated=False).one_or_none()
+  def login(self, user): 
+    user_on_db:UserSchema = self.dbSession.query(UserModel).filter_by(email=user.email).first()
+    if user_on_db is None:
+      raise HTTPException(
+        detail="email ou senha não encontrados",
+        status_code=status.HTTP_400_BAD_REQUEST
+      )
     
+    password_is_valid = crypt_context.verify(user.password, user_on_db.password)
+    if not password_is_valid:
+      raise HTTPException(
+        detail="email ou senha não encontrados",
+        status_code=status.HTTP_400_BAD_REQUEST
+      )
+      
+    authorization = JWTService.encode(user_on_db.username)
+    return JSONResponse(
+      content=authorization,
+      status_code=status.HTTP_200_OK
+    )
+
+  def validate_email(self, user:UserValidationSchema):
+    user_on_db = self.db_session.query(UserModel).filter_by(email=user.email, validated=False).one_or_none()
     if user_on_db is None:
       raise HTTPException(
         detail="email invalido",
@@ -89,17 +114,23 @@ class UserUseCases:
     user_on_db.validation_code = None
     user_on_db.validated = True
     try:
-      self.dbSession.commit()
+      self.db_session.commit()
     except:
       raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="erro no banco de dados"
       )
     
-    return JWTService.encode(user_on_db.username)
-    
-  def user_resend_validation_code(self, user:UserResendValidationCodeSchema):
-    user_on_db = self.dbSession.query(UserModel).filter_by(email=user.email, validated=False).one_or_none()
+    return JSONResponse(
+      content={
+        "detail":"sucesso",
+        "authentication": JWTService.encode(user_on_db.username)
+      },
+      status_code=status.HTTP_200_OK
+    )
+
+  def resend_validation_code(self, user: UserResendValidationCodeSchema):
+    user_on_db = self.db_session.query(UserModel).filter_by(email=user.email, validated=False).one_or_none()
     if user_on_db is None:
       raise HTTPException(
         detail="email invalido",
@@ -108,33 +139,24 @@ class UserUseCases:
     validation_code = f"{randint(1, 9)}{randint(0, 9)}{randint(0, 9)}{randint(0, 9)}"
     user_on_db.validation_code =  validation_code
     try:
-      self.dbSession.commit()
+      self.db_session.commit()
     except:
       raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="erro no banco de dados"
       )
-    send_validation_email(self.emailService, user_on_db)
-
-    return "código reenviado"
-
-  def user_login(self, user: UserSchema):
-    user_on_db:UserSchema = self.dbSession.query(UserModel).filter_by(email=user.email).first()
-    
-    if user_on_db is None:
+    try: 
+      send_validation_email(self.email_service, user_on_db)
+    except:
       raise HTTPException(
-        detail="email ou senha não encontrados",
+        detail="email indisponivel",
         status_code=status.HTTP_400_BAD_REQUEST
       )
-      
-    password_is_valid = crypt_context.verify(user.password, user_on_db.password)
-    if not password_is_valid:
-      raise HTTPException(
-        detail="email ou senha não encontrados",
-        status_code=status.HTTP_400_BAD_REQUEST
-      )
-      
-    authorization = JWTService.encode(user_on_db.username)
     
-    return authorization
+    return JSONResponse(
+      content={
+        "detail":"sucesso",
+      },
+      status_code=status.HTTP_200_OK
+    )
   

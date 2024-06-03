@@ -5,26 +5,25 @@ from sqlalchemy.orm import Session
 
 from .depends import get_db_session
 from .services import JWTService, EmailService
-from .useCases import UserUseCases
+from .controllers import AuthenticationController
 from .schemas import \
   UserSchema, \
   UserValidationSchema, \
   UserResendValidationCodeSchema, \
   UserLoginSchema
 
-
 # Email server settings
 EMAIL_PASSWORD=dotenv_values().get("GMAIL_APP_PASSWORD", None)
 EMAIL_ADDRESS=dotenv_values().get("GMAIL_ADDRESS", None)
-emailService = EmailService(
-  email=EMAIL_ADDRESS,
-  password=EMAIL_PASSWORD
-)
+email_service = EmailService( email=EMAIL_ADDRESS, password=EMAIL_PASSWORD )
 
-#Routes
+# Routes
 authentication_router = APIRouter(prefix="/autenticacao")
 authenticated_router = APIRouter(dependencies=[Depends(JWTService.token_verifier)], prefix="/autenticado")
 global_router = APIRouter()
+
+#Controllers
+authentication_controller = AuthenticationController( email_service=email_service )
 
 @global_router.get("/")
 def health_check() -> JSONResponse:
@@ -35,62 +34,35 @@ def health_check() -> JSONResponse:
 
 @authentication_router.post("/registro")
 def user_register(
-  userData: UserSchema=Depends(UserSchema),
-  dbSession:Session=Depends(get_db_session)
+  data: UserSchema=Depends(UserSchema),
+  db_session:Session=Depends(get_db_session)
 ) -> JSONResponse:
-  userUseCase = UserUseCases(dbSession=dbSession, emailService=emailService)
-  creation_status = userUseCase.user_register(userData)
-  
-  return JSONResponse(
-    content={
-      "detail":creation_status,
-    },
-    status_code=status.HTTP_200_OK
-  )
+  authentication_controller.db_session = db_session
+  return authentication_controller.signup(data)
 
 @authentication_router.post("/validar")
 def user_validator(
-  validationData: UserValidationSchema=Depends(UserValidationSchema),
-  dbSession:Session=Depends(get_db_session)
+  data: UserValidationSchema=Depends(UserValidationSchema),
+  db_session:Session=Depends(get_db_session)
 ) -> JSONResponse:
-  userUseCase = UserUseCases(dbSession=dbSession, emailService=emailService)
-  authentication_data = userUseCase.user_validate(validationData)
-  
-  return JSONResponse(
-    content={
-      "detail":"sucesso",
-      "authentication": authentication_data
-    },
-    status_code=status.HTTP_200_OK
-  )
+  authentication_controller.db_session = db_session
+  return authentication_controller.validate_email(data)
 
 @authentication_router.post("/reenviar-codigo")
 def user_resend_validation_code(
-  requestData: UserResendValidationCodeSchema=Depends(UserResendValidationCodeSchema),
-  dbSession:Session=Depends(get_db_session)
+  data: UserResendValidationCodeSchema=Depends(UserResendValidationCodeSchema),
+  db_session:Session=Depends(get_db_session)
 ) -> JSONResponse:
-  userUseCase = UserUseCases(dbSession=dbSession, emailService=emailService)
-  userUseCase.user_resend_validation_code(requestData)
-  
-  return JSONResponse(
-    content={
-      "detail":"sucesso",
-    },
-    status_code=status.HTTP_200_OK
-  )
+  authentication_controller.db_session = db_session
+  return authentication_controller.resend_validation_code(data)
   
 @authentication_router.post("/login")
 def user_login(
-  userData: UserLoginSchema=Depends(UserLoginSchema),
-  dbSession: Session=Depends(get_db_session)
+  data: UserLoginSchema=Depends(UserLoginSchema),
+  db_session: Session=Depends(get_db_session)
 ) -> JSONResponse:
-  userUseCase= UserUseCases(dbSession=dbSession)
-  authorization_data = userUseCase.user_login(userData)
-  
-  return JSONResponse(
-    content=authorization_data,
-    status_code=status.HTTP_200_OK
-  )
+  authentication_controller.db_session = db_session
+  return authentication_controller.login(data)
   
 @authenticated_router.get("/jogador")
 def user_authorization_test(
