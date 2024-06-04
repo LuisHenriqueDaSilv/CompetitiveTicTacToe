@@ -10,7 +10,8 @@ from .schemas import \
   UserSchema, \
   UserValidationSchema, \
   UserResendValidationCodeSchema, \
-  UserLoginSchema
+  UserLoginSchema, \
+  RequestChangePasswordSchema
 
 # Email server settings
 EMAIL_PASSWORD=dotenv_values().get("GMAIL_APP_PASSWORD", None)
@@ -63,6 +64,15 @@ def user_login(
 ) -> JSONResponse:
   authentication_controller.db_session = db_session
   return authentication_controller.login(data)
+
+@authentication_router.post("/alterar-senha")
+def request_change_password(
+  data: RequestChangePasswordSchema=Depends(RequestChangePasswordSchema),
+  db_session:Session=Depends(get_db_session)
+):
+  authentication_controller.db_session = db_session
+  return authentication_controller.request_change_password(data)
+
   
 @authenticated_router.get("/jogador")
 def user_authorization_test(

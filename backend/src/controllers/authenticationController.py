@@ -1,3 +1,4 @@
+from dotenv import dotenv_values
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse  
 from sqlalchemy import or_
@@ -6,10 +7,15 @@ from sqlalchemy.exc import IntegrityError
 from random import randint
 from passlib.context import CryptContext
 
+from src.emails import user_validation_email, change_password_email
 from src.db.models import UserModel
-from src.utils import send_validation_email
-from src.schemas import UserSchema, UserValidationSchema, UserResendValidationCodeSchema
-from src.services import JWTService
+from src.schemas import UserSchema, \
+  UserValidationSchema, \
+  UserResendValidationCodeSchema, \
+  RequestChangePasswordSchema
+from src.services import JWTService, EmailService
+
+CHANGE_PASSWORD_TOKEN_SECRET = dotenv_values().get("JWT_SECRET")
 
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 
@@ -17,7 +23,7 @@ class AuthenticationController():
 
   db_session:Session = None
 
-  def __init__(self, email_service):
+  def __init__(self, email_service: EmailService):
     self.email_service = email_service
 
   def signup(self, user: UserSchema):
@@ -49,7 +55,8 @@ class AuthenticationController():
     )
     
     try:
-      send_validation_email(self.email_service, created_user)
+      email_data = user_validation_email(self.email_service, created_user)
+      self.email_service.send_email(email_data)
     except:
       raise HTTPException(
         detail="email indisponivel",
@@ -121,10 +128,11 @@ class AuthenticationController():
         detail="erro no banco de dados"
       )
     
+    authorization = JWTService.encode(user_on_db.username)
     return JSONResponse(
       content={
         "detail":"sucesso",
-        "authentication": JWTService.encode(user_on_db.username)
+        "authentication": authorization
       },
       status_code=status.HTTP_200_OK
     )
@@ -146,7 +154,8 @@ class AuthenticationController():
         detail="erro no banco de dados"
       )
     try: 
-      send_validation_email(self.email_service, user_on_db)
+      email_data = user_validation_email(self.email_service, user_on_db)
+      self.email_service.send_email(email_data)
     except:
       raise HTTPException(
         detail="email indisponivel",
@@ -160,3 +169,36 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
   
+  def request_change_password(self, data: RequestChangePasswordSchema):
+    user_on_db = self.db_session.query(UserModel).filter_by(email=data.email).one_or_none()
+    if user_on_db is None:
+      raise HTTPException(
+        detail="perfil não encontrado",
+        status_code=status.HTTP_400_BAD_REQUEST
+      )
+      
+    change_password_token = JWTService.encode(
+      username=user_on_db.username,
+      expires_in=2*60, # 2 horas
+      secret=CHANGE_PASSWORD_TOKEN_SECRET
+    )
+      
+    try: 
+      confirm_change_password_url = f"{data.redirect_url}?token={change_password_token["token"]}"
+      email_data = change_password_email(self.email_service, user_on_db, confirm_change_password_url)
+      self.email_service.send_email(email_data)
+    except:
+      raise HTTPException(
+        detail="email indisponivel",
+        status_code=status.HTTP_400_BAD_REQUEST
+      )
+      
+    return JSONResponse(
+      content={
+        "detail":"sucesso",
+      },
+      status_code=status.HTTP_200_OK
+    )
+    
+    
+    

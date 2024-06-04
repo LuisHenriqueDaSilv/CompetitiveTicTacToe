@@ -16,13 +16,13 @@ oauth_scheme = OAuth2PasswordBearer(tokenUrl='/usuario/login')
 class JWTService():
 
   @staticmethod
-  def encode(username:str, expires_in: int=30):
+  def encode(username:str, expires_in: int=30, secret:str=JWT_SECRET):
     exp = datetime.now(timezone.utc) + timedelta(minutes=expires_in)
     payload = {
       'exp': exp,
       'sub': username
     }
-    token = jwt.encode(payload,JWT_SECRET ,algorithm=JWT_ALGORITHM)
+    token = jwt.encode(payload, secret, algorithm=JWT_ALGORITHM)
     return {
       "token": token,
       "exp": exp.isoformat()
