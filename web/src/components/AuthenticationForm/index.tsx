@@ -17,7 +17,7 @@ export default forwardRef<AuthenticationFormHandle, FormPropsInterface>((props, 
     setIsLoading(true)
     await props.submitAction(inputsValues)
       .then(props.sucessCallback)
-      .catch((error:any) => {
+      .catch((error: any) => {
         if (error.response && error.response.status == 400) {
           setError(error.response.data.detail)
           return
@@ -35,7 +35,8 @@ export default forwardRef<AuthenticationFormHandle, FormPropsInterface>((props, 
 
   return (
     <div className={styles.container}>
-      <p>{props.title}</p>
+      <h2>{props.title}</h2>
+      <p className={styles.description}>{props.description}</p>
       {error ? (<p className={styles.errorMessage}>{error}</p>) : null}
       <form onSubmit={handleFormSubmit}>
         {props.inputs.map((field, index) => {

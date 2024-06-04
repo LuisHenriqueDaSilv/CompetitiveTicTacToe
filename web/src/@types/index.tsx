@@ -71,9 +71,10 @@ export interface endGameEventInterface {
   winner: "x" | "o" | ""
 }
 
-export interface FormPropsInterface extends FormProps {
+export interface FormPropsInterface {
   title: string,
   buttonLabel: string,
+  description: string,
   inputs: {
     name: string,
     type?: string,
@@ -92,8 +93,8 @@ export interface AuthenticationFormHandle {
 };
 
 export interface HandleSucessLoginInterface extends AxiosResponse {
-    data: {
-      token: string,
-      exp: string
-    }
+  data: {
+    token: string,
+    exp: string
+  }
 }

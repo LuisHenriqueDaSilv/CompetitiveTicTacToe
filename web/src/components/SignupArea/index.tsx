@@ -26,10 +26,12 @@ export default function SignupArea() {
 
   return (
     <AuthenticationForm
-      title="registre-se para jogar e competir contra outros jogadores!"
+      title="Bem-vindo ao Jogo da Velha Competitivo!"
+      description="Estamos entusiasmados em tê-lo conosco. Crie sua conta para começar a desafiar outros jogadores e mostrar suas habilidades no clássico jogo da velha."
       buttonLabel='registre-se'
       footer={
-        <p className={styles.formFooter}> ou já tem uma conta? <button onClick={() => { navigate("/login") }}>Clique aqui</button></p>
+        <p className={styles.formFooter}> Se você já possui uma conta 
+        clique  <button onClick={() => { navigate("/login") }}>aqui</button> aqui para fazer login.</p>
       }
       inputs={[
         {

@@ -1,11 +1,32 @@
 .container {
   display: flex;
-  height: 100%;
-  justify-content: center;
   align-items: center;
   flex-direction: column;
-  height: 40%;
+  height: 100%;
   text-align: center;
+  gap: 3rem;
+
+  .tutorialContainer {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+
+    h1 {
+      margin-bottom: 0;
+    }
+
+    p {
+      margin-left: 2rem;
+    }
+  }
+
+  h1 {
+    color: var(--white);
+    font-size: 3rem;
+    margin-bottom: 2rem;
+  }
 
   p {
     color: var(--white);
@@ -36,11 +57,24 @@
   height: 100%;
 }
 
+@media (min-width: 1024px) {
+  .container {
+    .tutorialContainer {
+      text-align: left;
+    }
+  }
+}
+
 @media (min-width: 768px) {
   .container {
-    p {
+    h1 {
       font-size: 3rem;
     }
+
+    p {
+      font-size: 2rem;
+    }
+
     span {
       font-size: 2.5rem
     }

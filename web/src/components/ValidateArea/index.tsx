@@ -22,16 +22,28 @@ export default function ValidateArea() {
     const newCodeData = [...validationCode]
     const validKeys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
-    if (event.key == "Backspace") {
-      newCodeData[index] = ""
-      // @ts-ignore
-      if (index > 0) { inputRefs[index - 1].current.focus() }
-    } else {
-      if (validKeys.indexOf(inputValue) != -1) {
-        newCodeData[index] = inputValue
+    switch (event.key) {
+      case "Backspace":
+        if (validationCode[index] == "" && index > 0) {
+          // @ts-ignore
+          inputRefs[index - 1].current.focus()
+        }
+        newCodeData[index] = ""
+        break
+      case "ArrowLeft":
+        // @ts-ignore
+        if (index > 0) { inputRefs[index - 1].current.focus() }
+        break;
+      case "ArrowRight":
         // @ts-ignore
         if (index < 3) { inputRefs[index + 1].current.focus() }
-      }
+        break
+      default:
+        if (validKeys.indexOf(inputValue) != -1) {
+          newCodeData[index] = inputValue
+          // @ts-ignore
+          if (index < 3) { inputRefs[index + 1].current.focus() }
+        }
     }
     setValidationCode(newCodeData)
   }
@@ -70,9 +82,8 @@ export default function ValidateArea() {
     <div className={styles.container}>
       <h2>Só mais uma etapa!</h2>
       <p>
-        antes de iniciar os jogos é necessário validar que o email informado é
-        realmente seu! para isso, verifique sua caixa de entrada de email e
-        informe o código de segurança enviado (Lembre-se de chegar a caixa de spam)
+        Estamos empolgados em tê-lo conosco. Para garantir a segurança da sua conta e completar o seu registro, precisamos
+        que você valide seu perfil inserindo o código de validação de 4 dígitos que foi enviado para o seu email.
       </p>
       {
         error ? (<p className={styles.errorMessage}>{error}</p>) : null
@@ -83,6 +94,7 @@ export default function ValidateArea() {
             validationCode.map((codeField, index) => {
               return (
                 <input
+                  className={styles.fakeInput}
                   onKeyDown={(event) => { handleKeyDown(event, index) }}
                   required
                   value={codeField}
@@ -96,7 +108,15 @@ export default function ValidateArea() {
           {isLoading ? (<LoadingSpinner />) : <>validar</>}
         </button>
       </form>
-      <button>não recebeu o código? <span>reenviar</span></button>
+      <div className={styles.resendCode}>
+      <p>
+        Se você não recebeu o email de validação, verifique sua pasta de spam ou lixo eletrônico. 
+        Caso não encontre, clique <button><span>aqui</span></button> para reenviar o código de validação.
+      </p>
+      </div>
+      <footer>
+        Obrigado por se registrar no Jogo da Velha Competitivo! Esperamos que você aproveite seu tempo jogando com a gente e se divirta muito.
+      </footer>
     </div>
   )
 }

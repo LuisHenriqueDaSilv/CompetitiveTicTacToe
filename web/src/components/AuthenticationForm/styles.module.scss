@@ -1,15 +1,20 @@
 .container {
   display: flex;
   flex-direction: column;
-  max-width: 55rem;
   margin-top: 3rem;
   height: 100%;
   padding: 0 2rem;
   align-items: center;
   text-align: center;
 
-  >p {
+  >h2 {
     font-size: 3rem;
+    color: var(--white);
+    margin-bottom: 1rem;
+  }
+
+  .description {
+    font-size: 2.3rem;
     color: var(--white);
   }
 
@@ -22,7 +27,7 @@
   form {
     margin-top: 4rem;
     display: flex;
-    width: 100%;
+    max-width: 55rem;
     flex-direction: column;
     gap: 3rem;
     align-items: center;

@@ -3,6 +3,35 @@
   flex-direction: column;
   padding: 3rem;  
   align-items: center;
+  max-width: 90rem;
+  height: 100%;
+
+  footer {
+    margin-top: auto;
+    color: var(--gray);
+    text-align-last: center;
+  }
+
+  .resendCode {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    max-width: 70rem;
+    p {
+      font-size: 1.7rem;
+    }
+    button {
+      color: var(--white);
+      background: none;
+      border: none;
+      font-size: 2rem;
+  
+      span {
+        font-size: 2rem;
+        color: var(--green);
+      }
+    }
+  }
 
   h2 {
     font-size: 3rem;
@@ -17,29 +46,21 @@
     margin-bottom: 2rem;
   }
 
-  button {
-    color: var(--white);
-    background: none;
-    border: none;
-    font-size: 2rem;
 
-    span {
-      font-size: 2rem;
-      color: var(--green);
-    }
-  }
 
   form {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 3rem;
     align-items: center;
+    margin-top: 2rem;
 
     div {
       display: flex;
       gap: 1rem;
       max-width: 300px;
       width: 100%;
+
       input {
         aspect-ratio: 1;
         text-align: center;
@@ -60,7 +81,7 @@
       border-radius: 10px;
       color: var(--white);
       background-color: var(--green);
-      font-size: 2rem;
+      font-size: 3rem;
       margin-bottom: 2rem;
     }
   }

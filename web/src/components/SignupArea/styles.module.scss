@@ -1,6 +1,7 @@
 .formFooter {
   margin-top: 1rem;
-  font-size: 1.8rem;
+  font-size: 2.5rem;
+  color: var(--white);
 
   button {
     background: none;
@@ -26,12 +27,8 @@
 
 }
 
-@media (min-width: 425px) {
+@media (min-width: 768px) {
   .formFooter {
-    font-size: 2.5rem;
-
-    button {
-      font-size: 2.5rem;
-    }
+    font-size: 1.7rem;
   }
 }

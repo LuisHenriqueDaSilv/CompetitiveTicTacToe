@@ -29,13 +29,20 @@
   }
 }
 
+@media (min-width: 1440px) {
+  .appWrapper {
+    .appContainer {
+      max-height: 80rem;
+    }
+  }
+}
+
 @media (min-width: 1024px) {
   .appWrapper {
     height: 100vh;
     padding: 2rem;
 
     .appContainer {
-      max-height: 80rem;
       height: 100%;
       display: grid;
       grid-template-columns: 3fr 1fr;
