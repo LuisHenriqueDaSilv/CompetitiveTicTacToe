@@ -1,6 +1,5 @@
 import { AxiosPromise, AxiosResponse } from 'axios'
 import { ReactNode } from 'react'
-import { FormProps } from 'react-router-dom'
 
 export interface SignupParamInterface {
   username: string,
@@ -16,6 +15,11 @@ export interface ValidateParamInterface {
   email: string,
   code: string
 }
+
+export interface requestChangePasswordParamInterface{
+  email: string
+}
+
 export interface AuthencationContextValuesInterface {
   login: (param: unknown) => AxiosPromise,
   logout: () => void,
@@ -25,7 +29,8 @@ export interface AuthencationContextValuesInterface {
   validateEmail: (param: ValidateParamInterface) => AxiosPromise,
   playerInfos: PlayerInterface | null,
   saveJwt: (token: string) => void,
-  loadingAuthentication: boolean
+  loadingAuthentication: boolean,
+  requestChangePassword: (param: requestChangePasswordParamInterface) => AxiosPromise
 }
 
 export interface PlayerInterface {
@@ -97,4 +102,9 @@ export interface HandleSucessLoginInterface extends AxiosResponse {
     token: string,
     exp: string
   }
+}
+
+export interface StyledFooterProps {
+  className: string,
+  children: ReactNode
 }

@@ -5,10 +5,11 @@ import boardRouter from './boardRouter'
 
 import {
   AuthencationContextValuesInterface,
+  requestChangePasswordParamInterface,
   LoginParamInterface,
   PlayerInterface,
   SignupParamInterface,
-  ValidateParamInterface
+  ValidateParamInterface,
 } from '../@types'
 
 export const AuthenticationContext = createContext({} as AuthencationContextValuesInterface)
@@ -35,7 +36,14 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
     boardRouter.navigate("/")
   }
 
-  async function saveJwt(token: string) {
+  function requestChangePassword(data:unknown){
+    const {email} = data as requestChangePasswordParamInterface
+    const formData = new FormData()
+    formData.append("email", email)
+    return axiosClient.post("/autenticacao/alterar-senha")
+  } 
+
+  function saveJwt(token: string) {
     setCookies("authorization_token", token)
   }
 
@@ -91,7 +99,8 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
         fetchPlayerData,
         playerInfos,
         saveJwt,
-        loadingAuthentication
+        loadingAuthentication,
+        requestChangePassword
       }}
     >
       {children}
