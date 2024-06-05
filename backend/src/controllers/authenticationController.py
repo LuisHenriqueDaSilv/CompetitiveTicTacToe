@@ -85,7 +85,7 @@ class AuthenticationController():
     )
   
   def login(self, user): 
-    user_on_db:UserSchema = self.dbSession.query(UserModel).filter_by(email=user.email).first()
+    user_on_db:UserSchema = self.db_session.query(UserModel).filter_by(email=user.email).first()
     if user_on_db is None:
       raise HTTPException(
         detail="email ou senha não encontrados",
