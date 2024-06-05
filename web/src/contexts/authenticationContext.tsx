@@ -37,10 +37,13 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
   }
 
   function requestChangePassword(data:unknown){
+    const hostname =  window.location.origin
+    console.log(hostname)
     const {email} = data as requestChangePasswordParamInterface
     const formData = new FormData()
     formData.append("email", email)
-    return axiosClient.post("/autenticacao/alterar-senha")
+    formData.append("redirect_url", `${hostname}/recuperar-acesso/nova-senha`)
+    return axiosClient.post("/autenticacao/alterar-senha", formData)
   } 
 
   function saveJwt(token: string) {

@@ -30,7 +30,7 @@ export interface AuthencationContextValuesInterface {
   playerInfos: PlayerInterface | null,
   saveJwt: (token: string) => void,
   loadingAuthentication: boolean,
-  requestChangePassword: (param: requestChangePasswordParamInterface) => AxiosPromise
+  requestChangePassword: (param: unknown) => AxiosPromise
 }
 
 export interface PlayerInterface {
@@ -105,6 +105,6 @@ export interface HandleSucessLoginInterface extends AxiosResponse {
 }
 
 export interface StyledFooterProps {
-  className: string,
+  className: "inputFooter"|"formFooter",
   children: ReactNode
 }
