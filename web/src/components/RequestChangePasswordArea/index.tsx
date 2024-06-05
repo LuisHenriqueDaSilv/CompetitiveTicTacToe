@@ -8,7 +8,7 @@ import {AuthenticationFormHandle} from '../../@types'
 
 import EmailIcon from '../../assets/email.svg'
 
-export default function RequestChangePasswordScreen() {
+export default function RequestChangePasswordArea() {
 
   const formRef = useRef<AuthenticationFormHandle>(null)
   const navigate = useNavigate()
