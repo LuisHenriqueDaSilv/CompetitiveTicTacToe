@@ -85,7 +85,7 @@ export interface FormPropsInterface {
     type?: string,
     placeHolder: string,
     icon: string,
-    footer: JSX.Element,
+    footer?: JSX.Element,
     maxLength?: number
   }[]
   footer: JSX.Element,
