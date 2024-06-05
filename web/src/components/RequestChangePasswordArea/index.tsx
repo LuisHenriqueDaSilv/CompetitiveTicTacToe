@@ -16,7 +16,7 @@ export default function RequestChangePasswordArea() {
 
   function handleSucessRequestPassword(){
     alert(`Um email com instruções para redefinir sua senha foi enviado para ${formRef.current?.data.email}. Por favor, verifique sua caixa de entrada e pasta de spam e prossiga com a recuperação por lá.`)
-    navigate("/encontrar-partida")
+    navigate("/login")
   }
 
   return (
