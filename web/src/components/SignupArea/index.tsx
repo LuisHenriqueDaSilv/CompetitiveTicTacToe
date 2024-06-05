@@ -49,7 +49,6 @@ export default function SignupArea() {
           maxLength: 320
         },
         {
-          footer: <StyledFooter className="inputFooter"><button>esqueceu sua senha?</button></StyledFooter>,
           icon: PasswordIcon,
           name: "password",
           type: "password",
