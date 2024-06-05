@@ -2,10 +2,17 @@ import { useContext } from "react"
 import { GameContext } from "../../contexts/gameContext"
 import styles from './styles.module.scss'
 import MedalIcon from '../../assets/medal.svg'
+import { useNavigate } from "react-router"
 
 export default function GameBoard() {
 
-  const { gamedata, submitMove, isMyTurn } = useContext(GameContext)
+  const navigate = useNavigate()
+
+  const { gamedata, submitMove, isMyTurn, inGame } = useContext(GameContext)
+
+  if(!inGame){
+    navigate("/")
+  }
 
   return (
     <div className={styles.container}>
