@@ -44,7 +44,7 @@ export default function LoginArea() {
           maxLength: 320
         },
         {
-          footer: <StyledFooter className="inputFooter"><button>esqueceu sua senha?</button></StyledFooter>,
+          footer: <StyledFooter className="inputFooter"><button onClick={() => navigate("/recuperar-acesso")}>esqueceu sua senha?</button></StyledFooter>,
           icon: PasswordIcon,
           type: "password",
           name: "password",
