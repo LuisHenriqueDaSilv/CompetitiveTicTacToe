@@ -5,7 +5,7 @@ from pydantic import BaseModel, field_validator
 from src.utils.formBodyParser import Form, form_body
 
 @form_body
-class RequestChangePasswordSchema(BaseModel):
+class UserRequestChangePasswordSchema(BaseModel):
   email: str = Form(...)
   redirect_url: str = Form(...)
   

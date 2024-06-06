@@ -6,16 +6,19 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from random import randint
 from passlib.context import CryptContext
+from jose import jwt, JWTError
 
 from src.emails import user_validation_email, change_password_email
 from src.db.models import UserModel
 from src.schemas import UserSchema, \
   UserValidationSchema, \
   UserResendValidationCodeSchema, \
-  RequestChangePasswordSchema
+  UserRequestChangePasswordSchema, \
+  UserChangePasswordSchema
 from src.services import JWTService, EmailService
 
 CHANGE_PASSWORD_TOKEN_SECRET = dotenv_values().get("JWT_SECRET")
+JWT_ALGORITHM = dotenv_values().get("JWT_ALGORITHM")
 
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 
@@ -85,7 +88,7 @@ class AuthenticationController():
     )
   
   def login(self, user): 
-    user_on_db:UserSchema = self.db_session.query(UserModel).filter_by(email=user.email).first()
+    user_on_db:UserSchema = self.db_session.query(UserModel).filter_by(email=user.email).one_or_none()
     if user_on_db is None:
       raise HTTPException(
         detail="email ou senha não encontrados",
@@ -98,7 +101,7 @@ class AuthenticationController():
         detail="email ou senha não encontrados",
         status_code=status.HTTP_400_BAD_REQUEST
       )
-      
+    
     authorization = JWTService.encode(user_on_db.username)
     return JSONResponse(
       content=authorization,
@@ -169,7 +172,7 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
   
-  def request_change_password(self, data: RequestChangePasswordSchema):
+  def request_change_password(self, data: UserRequestChangePasswordSchema):
     user_on_db = self.db_session.query(UserModel).filter_by(email=data.email).one_or_none()
     if user_on_db is None:
       raise HTTPException(
@@ -200,5 +203,30 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
     
+  def change_password(self, data: UserChangePasswordSchema):
     
+    token_data = {}
+    try:
+      token_data = jwt.decode(data.validation_token, CHANGE_PASSWORD_TOKEN_SECRET, algorithms=[JWT_ALGORITHM])
+    except JWTError:
+      raise HTTPException(
+        detail="token invalido a",
+        status_code=status.HTTP_401_UNAUTHORIZED
+      )
+      
+    user_on_db = self.db_session.query(UserModel).filter_by(username=token_data["sub"]).one_or_none()
+    if user_on_db is None:
+      raise HTTPException(
+        detail="token invalido b",
+        status_code=status.HTTP_400_BAD_REQUEST
+      )
+    user_on_db.password = crypt_context.hash(data.new_password)
+    self.db_session.commit()  
+    
+    return JSONResponse(
+      content={
+        "detail": "sucess"
+      },
+      status_code=status.HTTP_200_OK
+    )      
     

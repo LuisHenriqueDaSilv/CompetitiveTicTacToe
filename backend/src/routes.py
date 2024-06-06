@@ -11,7 +11,8 @@ from .schemas import \
   UserValidationSchema, \
   UserResendValidationCodeSchema, \
   UserLoginSchema, \
-  RequestChangePasswordSchema
+  UserRequestChangePasswordSchema, \
+  UserChangePasswordSchema
 
 # Email server settings
 EMAIL_PASSWORD=dotenv_values().get("GMAIL_APP_PASSWORD", None)
@@ -67,11 +68,19 @@ def user_login(
 
 @authentication_router.post("/alterar-senha")
 def request_change_password(
-  data: RequestChangePasswordSchema=Depends(RequestChangePasswordSchema),
+  data: UserRequestChangePasswordSchema=Depends(UserRequestChangePasswordSchema),
   db_session:Session=Depends(get_db_session)
 ):
   authentication_controller.db_session = db_session
   return authentication_controller.request_change_password(data)
+
+@authentication_router.post("/alterar-senha/confirmar")
+def change_password(
+  data: UserChangePasswordSchema=Depends(UserChangePasswordSchema),
+  db_session: Session=Depends(get_db_session)
+):
+  authentication_controller.db_session = db_session
+  return authentication_controller.change_password(data)
 
   
 @authenticated_router.get("/jogador")
