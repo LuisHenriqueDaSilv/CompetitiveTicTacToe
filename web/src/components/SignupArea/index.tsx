@@ -35,7 +35,7 @@ export default function SignupArea() {
       }
       inputs={[
         {
-          footer: <StyledFooter className="inputFooter">este sera o nome mostrado em suas partidas e rankings</StyledFooter>,
+          footer: <StyledFooter className="inputFooter">este nome sera mostrado em suas partidas e rankings</StyledFooter>,
           icon: UserIcon,
           name: "username",
           placeHolder: "por qual nome deseja ser chamado?",
