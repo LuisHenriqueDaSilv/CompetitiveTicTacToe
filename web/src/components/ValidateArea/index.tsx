@@ -9,7 +9,7 @@ export default function ValidateArea() {
 
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)]
 
-  const { validateEmail, fetchPlayerData, saveJwt } = useContext(AuthenticationContext)
+  const { validateEmail, fetchPlayerData, saveJwt, resendValidationCode } = useContext(AuthenticationContext)
   const { state } = useLocation()
   const navigate = useNavigate()
 
@@ -48,21 +48,10 @@ export default function ValidateArea() {
     setValidationCode(newCodeData)
   }
 
-  async function handleValidateFormSubmit(event: FormEvent) {
-    event.preventDefault()
+  async function handleClickResendValidationCode(){
     setIsLoading(true)
-    setError(null)
-
-    validateEmail({
-      code: validationCode.join(""),
-      email: state.email
-    }).then(async (response) => {
-      const jwt = response.data.authentication.token
-      await fetchPlayerData(jwt)
-      saveJwt(jwt)
-      setIsLoading(false)
-      navigate("/encontrar-partida")
-
+    await resendValidationCode(state.email).then(() => {
+      alert("A mensagem de validação foi reenviada para o seu e-mail. Por favor, verifique sua caixa de entrada e spam e siga as instruções para validar sua conta.")
     }).catch((error) => {
       setIsLoading(false)
       if (error.response && error.response.status == 400) {
@@ -71,6 +60,32 @@ export default function ValidateArea() {
       }
       setError("algo de inesperado ocorreu, tente novamente mais tarde")
     })
+    setIsLoading(false)
+  }
+
+  async function handleValidateFormSubmit(event: FormEvent) {
+    event.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    await validateEmail({
+      code: validationCode.join(""),
+      email: state.email
+    }).then(async (response) => {
+      const jwt = response.data.authentication.token
+      await fetchPlayerData(jwt)
+      saveJwt(jwt)
+      navigate("/encontrar-partida")
+    }).catch((error) => {
+      if (error.response && error.response.status == 400) {
+        setError(error.response.data.detail)
+        return
+      }
+      setError("algo de inesperado ocorreu, tente novamente mais tarde")
+    })
+
+    setIsLoading(false)
+
   }
 
   if (!state) {
@@ -111,7 +126,7 @@ export default function ValidateArea() {
       <div className={styles.resendCode}>
       <p>
         Se você não recebeu o email de validação, verifique sua pasta de spam ou lixo eletrônico. 
-        Caso não encontre, clique <button><span>aqui</span></button> para reenviar o código de validação.
+        Caso não encontre, clique <button onClick={handleClickResendValidationCode}><span>aqui</span></button> para reenviar o código de validação.
       </p>
       </div>
       <footer>

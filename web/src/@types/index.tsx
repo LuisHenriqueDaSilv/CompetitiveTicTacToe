@@ -30,7 +30,8 @@ export interface AuthencationContextValuesInterface {
   playerInfos: PlayerInterface | null,
   saveJwt: (token: string) => void,
   loadingAuthentication: boolean,
-  requestChangePassword: (param: unknown) => AxiosPromise
+  requestChangePassword: (param: unknown) => AxiosPromise,
+  resendValidationCode: (email: string) => AxiosPromise
 }
 
 export interface PlayerInterface {

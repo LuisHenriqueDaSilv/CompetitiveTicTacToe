@@ -36,6 +36,12 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
     boardRouter.navigate("/")
   }
 
+  function resendValidationCode(email: string){
+    const formData = new FormData()
+    formData.append("email", email)
+    return axiosClient.post("/autenticacao/reenviar-codigo", formData)
+  }
+
   function requestChangePassword(data:unknown){
     const hostname =  window.location.origin
     console.log(hostname)
@@ -103,7 +109,8 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
         playerInfos,
         saveJwt,
         loadingAuthentication,
-        requestChangePassword
+        requestChangePassword,
+        resendValidationCode
       }}
     >
       {children}
