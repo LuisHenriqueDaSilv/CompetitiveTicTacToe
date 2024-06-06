@@ -185,8 +185,8 @@ class AuthenticationController():
       token_data = jwt.decode(request_data.validation_token, CHANGE_PASSWORD_TOKEN_SECRET, algorithms=[JWT_ALGORITHM])
     except JWTError:
       raise HTTPException(
-        detail="token invalido",
-        status_code=status.HTTP_401_UNAUTHORIZED
+        detail="a solicitação de recuperação de senha é inválida ou expirou. Por favor, solicite uma nova recuperação.",
+        status_code=status.HTTP_400_BAD_REQUEST
       )
       
     user_on_db = db_session.query(UserModel).filter_by(username=token_data["sub"]).one_or_none()
