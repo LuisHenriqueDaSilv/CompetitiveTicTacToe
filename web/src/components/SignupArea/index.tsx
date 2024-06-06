@@ -31,7 +31,7 @@ export default function SignupArea() {
       buttonLabel='registre-se'
       footer={
         <StyledFooter className="formFooter"> Se você já possui uma conta 
-        clique  <button onClick={() => { navigate("/login") }}>aqui</button> aqui para fazer login.</StyledFooter>
+        clique  <button onClick={() => { navigate("/login") }}>aqui</button> para fazer login.</StyledFooter>
       }
       inputs={[
         {
