@@ -4,3 +4,4 @@ from .userResendValidationCodeSchema import UserResendValidationCodeSchema
 from .userLoginSchema import UserLoginSchema
 from .userRequestChangePasswordSchema import UserRequestChangePasswordSchema 
 from .userChangePasswordSchema import UserChangePasswordSchema
+from .genericAuthenticationRouteSchema import GenericAuthenticationRouteSchema

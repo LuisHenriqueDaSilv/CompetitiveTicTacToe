@@ -24,25 +24,23 @@ crypt_context = CryptContext(schemes=['sha256_crypt'])
 
 class AuthenticationController():
 
-  db_session:Session = None
-
   def __init__(self, email_service: EmailService):
     self.email_service = email_service
 
-  def signup(self, user: UserSchema):
-    exist_user_on_db = self.db_session.query(UserModel).where(or_(UserModel.email==user.email, UserModel.username==user.username)).first()
+  def signup(self, request_data: UserSchema, db_session:Session):
+    exist_user_on_db = db_session.query(UserModel).where(or_(UserModel.email==request_data.email, UserModel.username==request_data.username)).first()
     if exist_user_on_db is not None:
-      if not exist_user_on_db.validated and exist_user_on_db.email == user.email:
+      if not exist_user_on_db.validated and exist_user_on_db.email == request_data.email:
         raise HTTPException(
           status_code=status.HTTP_200_OK,
           detail="já existe um processo de validação com este email, verifique sua caixa de entrada"
         )
-      if exist_user_on_db.email == user.email:
+      if exist_user_on_db.email == request_data.email:
         raise HTTPException(
           status_code=status.HTTP_400_BAD_REQUEST,
           detail="já existe um jogador utilizando o email informado"
         )
-      if exist_user_on_db.username == user.username:
+      if exist_user_on_db.username == request_data.username:
         raise HTTPException(
           status_code=status.HTTP_400_BAD_REQUEST,
           detail="nome de usuário indisponivel"
@@ -50,9 +48,9 @@ class AuthenticationController():
 
     validation_code = f"{randint(1, 9)}{randint(0, 9)}{randint(0, 9)}{randint(0, 9)}"
     created_user = UserModel(
-      username=user.username,
-      password=crypt_context.hash(user.password),
-      email=user.email,
+      username=request_data.username,
+      password=crypt_context.hash(request_data.password),
+      email=request_data.email,
       validated=False,
       validation_code=validation_code
     )
@@ -67,8 +65,8 @@ class AuthenticationController():
       )
 
     try:
-      self.db_session.add(created_user)
-      self.db_session.commit()
+      db_session.add(created_user)
+      db_session.commit()
     except IntegrityError:
       raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
@@ -87,15 +85,9 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
   
-  def login(self, user): 
-    user_on_db:UserSchema = self.db_session.query(UserModel).filter_by(email=user.email).one_or_none()
-    if user_on_db is None:
-      raise HTTPException(
-        detail="email ou senha não encontrados",
-        status_code=status.HTTP_400_BAD_REQUEST
-      )
+  def login(self, request_data, user_on_db:UserSchema): 
     
-    password_is_valid = crypt_context.verify(user.password, user_on_db.password)
+    password_is_valid = crypt_context.verify(request_data.password, user_on_db.password)
     if not password_is_valid:
       raise HTTPException(
         detail="email ou senha não encontrados",
@@ -108,14 +100,9 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
 
-  def validate_email(self, user:UserValidationSchema):
-    user_on_db = self.db_session.query(UserModel).filter_by(email=user.email, validated=False).one_or_none()
-    if user_on_db is None:
-      raise HTTPException(
-        detail="email invalido",
-        status_code=status.HTTP_400_BAD_REQUEST
-      )
-    if user_on_db.validation_code != int(user.code):
+  def validate_email(self, request_data:UserValidationSchema, user_on_db:UserModel, db_session:Session):
+
+    if user_on_db.validation_code != int(request_data.code):
       raise HTTPException(
         detail="código incorreto",
         status_code=status.HTTP_400_BAD_REQUEST
@@ -124,7 +111,7 @@ class AuthenticationController():
     user_on_db.validation_code = None
     user_on_db.validated = True
     try:
-      self.db_session.commit()
+      db_session.commit()
     except:
       raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -140,17 +127,11 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
 
-  def resend_validation_code(self, user: UserResendValidationCodeSchema):
-    user_on_db = self.db_session.query(UserModel).filter_by(email=user.email, validated=False).one_or_none()
-    if user_on_db is None:
-      raise HTTPException(
-        detail="email invalido",
-        status_code=status.HTTP_400_BAD_REQUEST
-      )
+  def resend_validation_code(self, user_on_db:UserModel, db_session:Session):
     validation_code = f"{randint(1, 9)}{randint(0, 9)}{randint(0, 9)}{randint(0, 9)}"
     user_on_db.validation_code =  validation_code
     try:
-      self.db_session.commit()
+      db_session.commit()
     except:
       raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -172,13 +153,7 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
   
-  def request_change_password(self, data: UserRequestChangePasswordSchema):
-    user_on_db = self.db_session.query(UserModel).filter_by(email=data.email).one_or_none()
-    if user_on_db is None:
-      raise HTTPException(
-        detail="perfil não encontrado",
-        status_code=status.HTTP_400_BAD_REQUEST
-      )
+  def request_change_password(self, request_data: UserRequestChangePasswordSchema, user_on_db:UserModel):
       
     change_password_token = JWTService.encode(
       username=user_on_db.username,
@@ -187,7 +162,7 @@ class AuthenticationController():
     )
       
     try: 
-      confirm_change_password_url = f"{data.redirect_url}?token={change_password_token["token"]}"
+      confirm_change_password_url = f"{request_data.redirect_url}?token={change_password_token["token"]}"
       email_data = change_password_email(self.email_service, user_on_db, confirm_change_password_url)
       self.email_service.send_email(email_data)
     except:
@@ -203,25 +178,25 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
     
-  def change_password(self, data: UserChangePasswordSchema):
+  def change_password(self, request_data: UserChangePasswordSchema, db_session:Session):
     
     token_data = {}
     try:
-      token_data = jwt.decode(data.validation_token, CHANGE_PASSWORD_TOKEN_SECRET, algorithms=[JWT_ALGORITHM])
+      token_data = jwt.decode(request_data.validation_token, CHANGE_PASSWORD_TOKEN_SECRET, algorithms=[JWT_ALGORITHM])
     except JWTError:
       raise HTTPException(
-        detail="token invalido a",
+        detail="token invalido",
         status_code=status.HTTP_401_UNAUTHORIZED
       )
       
-    user_on_db = self.db_session.query(UserModel).filter_by(username=token_data["sub"]).one_or_none()
+    user_on_db = db_session.query(UserModel).filter_by(username=token_data["sub"]).one_or_none()
     if user_on_db is None:
       raise HTTPException(
-        detail="token invalido b",
+        detail="token invalido",
         status_code=status.HTTP_400_BAD_REQUEST
       )
-    user_on_db.password = crypt_context.hash(data.new_password)
-    self.db_session.commit()  
+    user_on_db.password = crypt_context.hash(request_data.new_password)
+    db_session.commit()  
     
     return JSONResponse(
       content={
