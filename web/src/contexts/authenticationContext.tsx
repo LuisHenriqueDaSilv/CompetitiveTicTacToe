@@ -10,6 +10,7 @@ import {
   PlayerInterface,
   SignupParamInterface,
   ValidateParamInterface,
+  ChangePasswordParamInterface
 } from '../@types'
 
 export const AuthenticationContext = createContext({} as AuthencationContextValuesInterface)
@@ -22,11 +23,20 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
   const [loadingAuthentication, setLoadingAuthentication] = useState<boolean>(false)
 
   function login(data: unknown) {
-    const {email, password} = data as LoginParamInterface
+    const { email, password } = data as LoginParamInterface
     const formData = new FormData()
     formData.append("email", email)
     formData.append("password", password)
     return axiosClient.post("/autenticacao/login", formData)
+  }
+
+  function changePassword(data: unknown) {
+    const { new_password, validation_token } = data as ChangePasswordParamInterface
+    const formData = new FormData()
+    formData.append("new_password", new_password)
+    formData.append("validation_token", validation_token)
+    return axiosClient.post("/autenticacao/alterar-senha/confirmar", formData)
+
   }
 
   function logout() {
@@ -36,21 +46,20 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
     boardRouter.navigate("/")
   }
 
-  function resendValidationCode(email: string){
+  function resendValidationCode(email: string) {
     const formData = new FormData()
     formData.append("email", email)
     return axiosClient.post("/autenticacao/reenviar-codigo", formData)
   }
 
-  function requestChangePassword(data:unknown){
-    const hostname =  window.location.origin
-    console.log(hostname)
-    const {email} = data as requestChangePasswordParamInterface
+  function requestChangePassword(data: unknown) {
+    const hostname = window.location.origin
+    const { email } = data as requestChangePasswordParamInterface
     const formData = new FormData()
     formData.append("email", email)
     formData.append("redirect_url", `${hostname}/recuperar-acesso/nova-senha`)
     return axiosClient.post("/autenticacao/alterar-senha", formData)
-  } 
+  }
 
   function saveJwt(token: string) {
     setCookies("authorization_token", token)
@@ -84,6 +93,7 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
     formData.append("username", username)
     return axiosClient.post("/autenticacao/registro", formData)
   }
+  
   async function validateEmail({ email, code }: ValidateParamInterface) {
     const formData = new FormData()
     formData.append("email", email)
@@ -110,7 +120,8 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
         saveJwt,
         loadingAuthentication,
         requestChangePassword,
-        resendValidationCode
+        resendValidationCode,
+        changePassword
       }}
     >
       {children}

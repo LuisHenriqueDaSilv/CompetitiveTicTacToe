@@ -20,6 +20,11 @@ export interface requestChangePasswordParamInterface{
   email: string
 }
 
+export interface ChangePasswordParamInterface {
+  new_password: string,
+  validation_token: string
+}
+
 export interface AuthencationContextValuesInterface {
   login: (param: unknown) => AxiosPromise,
   logout: () => void,
@@ -31,7 +36,8 @@ export interface AuthencationContextValuesInterface {
   saveJwt: (token: string) => void,
   loadingAuthentication: boolean,
   requestChangePassword: (param: unknown) => AxiosPromise,
-  resendValidationCode: (email: string) => AxiosPromise
+  resendValidationCode: (email: string) => AxiosPromise,
+  changePassword: (param: unknown) => AxiosPromise
 }
 
 export interface PlayerInterface {
@@ -95,7 +101,7 @@ export interface FormPropsInterface {
 }
 
 export interface AuthenticationFormHandle {
-  data: { [key: string]: string };
+  data: { [key: string]: string }
 };
 
 export interface HandleSucessLoginInterface extends AxiosResponse {
