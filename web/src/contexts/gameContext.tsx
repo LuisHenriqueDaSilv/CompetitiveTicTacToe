@@ -1,7 +1,9 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import {Socket} from 'socket.io-client'
 import socketClient from '../services/socket'
 import boardRouter from './boardRouter'
 
+import { AuthenticationContext } from './authenticationContext'
 import {
   gameContextProviderValuesInterface,
   gameContextProviderParamsInterface,
@@ -15,13 +17,17 @@ export const GameContext = createContext({} as gameContextProviderValuesInterfac
 
 export function GameContextProvider({ children }: gameContextProviderParamsInterface) {
 
+  const {
+    getJwt,
+    authenticated
+  } = useContext(AuthenticationContext)
+
   const [inGame, setInGame] = useState<boolean>(false)
   const [gamemode, setGamemode] = useState<"multiplayer" | "algoritmo">("algoritmo")
   const [isFindingGame, setIsFindingGame] = useState<boolean>(false)
   const [gamedata, setGamedata] = useState<string[]>([])
   const [gameInfos, setGameInfos] = useState<gameInfosInterface | null>(null)
   const [isMyTurn, setIsMyTurn] = useState<boolean>(true)
-  const [socket, setSocket] = useState<any>()
 
   function findGame() {
     setIsFindingGame(true);
@@ -47,13 +53,12 @@ export function GameContextProvider({ children }: gameContextProviderParamsInter
       }, gameInfos?.mode == "algoritmo" ? 500 : 0)
     }
 
-    socket?.on("new_move", onNewMove)
-    return () => { socket?.off("new_move", onNewMove) }
-  }, [gameInfos, gamedata, socket])
+    socketClient.on("new_move", onNewMove)
+    return () => { socketClient?.off("new_move", onNewMove) }
+  }, [gameInfos, gamedata])
 
   useEffect(() => {
     socketClient.connect()
-    setSocket(socketClient)
     function onBad(data: string) {
       alert(data)
     }
@@ -86,6 +91,20 @@ export function GameContextProvider({ children }: gameContextProviderParamsInter
       socketClient.off("end_game", onEndGame)
     }
   }, [])
+
+  useEffect(() => {
+    console.log("teste")
+    socketClient.disconnect()
+    if(authenticated){
+      const token = getJwt()
+      socketClient.io.opts.query = {
+        authentication_jwt: token
+      }
+      socketClient.connect()
+    }else {
+      socketClient.connect()
+    }
+  }, [authenticated])
 
   return (
     <GameContext.Provider value={{

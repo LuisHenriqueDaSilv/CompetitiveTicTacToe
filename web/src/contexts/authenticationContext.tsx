@@ -65,6 +65,10 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
     setCookies("authorization_token", token)
   }
 
+  function getJwt(){
+    return cookies["authorization_token"]
+  }
+
   async function fetchPlayerData(token: string) {
     setLoadingAuthentication(true)
     await axiosClient.get("/autenticado/jogador", {
@@ -102,7 +106,7 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
   }
 
   useEffect(() => {
-    const jwt = cookies["authorization_token"]
+    const jwt = getJwt()
     if (!jwt) { return }
     fetchPlayerData(jwt)
   }, [])
@@ -121,7 +125,8 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
         loadingAuthentication,
         requestChangePassword,
         resendValidationCode,
-        changePassword
+        changePassword,
+        getJwt
       }}
     >
       {children}
