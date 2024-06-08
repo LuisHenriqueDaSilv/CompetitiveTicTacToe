@@ -10,13 +10,15 @@ from src.db.models import UserModel
 
 JWT_SECRET = dotenv_values().get("JWT_SECRET")
 JWT_ALGORITHM = dotenv_values().get("JWT_ALGORITHM")
+CHANGE_PASSWORD_TOKEN_SECRET = dotenv_values().get("JWT_SECRET")
 
 oauth_scheme = OAuth2PasswordBearer(tokenUrl='/usuario/login')
 
 class JWTService():
 
   @staticmethod
-  def encode(username:str, expires_in: int=30, secret:str=JWT_SECRET):
+  def encode(username:str, expires_in: int=30, token_type:str="authentication"):
+    secret = JWT_SECRET if token_type == "authentication" else CHANGE_PASSWORD_TOKEN_SECRET
     exp = datetime.now(timezone.utc) + timedelta(minutes=expires_in)
     payload = {
       'exp': exp,
@@ -27,6 +29,14 @@ class JWTService():
       "token": token,
       "exp": exp.isoformat()
     }
+
+  @staticmethod
+  def decode(token:str, token_type:str="authentication"):
+    secret = JWT_SECRET if token_type == "authentication" else CHANGE_PASSWORD_TOKEN_SECRET
+    try:
+      return jwt.decode(token, secret, algorithms=[JWT_ALGORITHM])
+    except JWTError:
+      raise "token invalido"
     
   @staticmethod
   def token_verifier(

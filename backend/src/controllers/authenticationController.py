@@ -1,4 +1,3 @@
-from dotenv import dotenv_values
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse  
 from sqlalchemy import or_
@@ -6,7 +5,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from random import randint
 from passlib.context import CryptContext
-from jose import jwt, JWTError
 
 from src.emails import user_validation_email, change_password_email
 from src.db.models import UserModel
@@ -16,9 +14,6 @@ from src.schemas import UserSchema, \
   UserRequestChangePasswordSchema, \
   UserChangePasswordSchema
 from src.services import JWTService, EmailService
-
-CHANGE_PASSWORD_TOKEN_SECRET = dotenv_values().get("JWT_SECRET")
-JWT_ALGORITHM = dotenv_values().get("JWT_ALGORITHM")
 
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 
@@ -158,7 +153,7 @@ class AuthenticationController():
     change_password_token = JWTService.encode(
       username=user_on_db.username,
       expires_in=2*60, # 2 horas
-      secret=CHANGE_PASSWORD_TOKEN_SECRET
+      token_type="change_password"
     )
       
     try: 
@@ -182,8 +177,8 @@ class AuthenticationController():
     
     token_data = {}
     try:
-      token_data = jwt.decode(request_data.validation_token, CHANGE_PASSWORD_TOKEN_SECRET, algorithms=[JWT_ALGORITHM])
-    except JWTError:
+      token_data = JWTService.decode(request_data.validation_token, "password")
+    except:
       raise HTTPException(
         detail="a solicitação de recuperação de senha é inválida ou expirou. Por favor, solicite uma nova recuperação.",
         status_code=status.HTTP_400_BAD_REQUEST
