@@ -10,7 +10,6 @@ from src.emails import user_validation_email, change_password_email
 from src.db.models import UserModel
 from src.schemas import UserSchema, \
   UserValidationSchema, \
-  UserResendValidationCodeSchema, \
   UserRequestChangePasswordSchema, \
   UserChangePasswordSchema
 from src.services import JWTService, EmailService

@@ -1,41 +1,85 @@
 from socketio import AsyncServer
-from sqlalchemy.orm import Session
 import random
 from uuid import uuid4
+from src.services import JWTService
 
+from src.db.models import UserModel
 from src.db.gamesMemoryDatabase import GamesMemoryDatabase
 
 class GamesController():
   
-  db_session:Session = None
-  
+  sio: AsyncServer = None
   def __init__(self, games_memory:GamesMemoryDatabase, sio:AsyncServer):
     self.games_memory = games_memory
     self.sio = sio
     
-  async def create(self, sid):
-    if sid in self.games_memory.players_in_game:
-      await self.sio.emit("bad", "você já esta em uma partida", to=sid)
+  @JWTService.socket_decode_token_middleware
+  async def search_new_game(self, sid, data, user_on_db:UserModel):
+    gamemode = data.get("gamemode", None)
+    if gamemode == "algoritmo":
+      user_to_save_in_memory = {
+        "id": None,
+        "username": None,
+        "sid":sid
+      }
+      await self.create("algoritmo", sid)
+      self.games_memory.players_in_game[sid] = user_to_save_in_memory
+      return
+    elif gamemode == "multiplayer":
+      if user_on_db is None:
+        await self.sio.emit("bad", "não autenticado", to=sid)
+        return
+      user_to_save_in_memory = {
+        "id": user_on_db.id,
+        "username": user_on_db.username,
+        "sid":sid
+      }
+      if len(self.games_memory.players_finding_game.keys()) == 0:
+        self.games_memory.players_finding_game[sid] = user_to_save_in_memory
+      else:
+        player_who_was_waiting = self.games_memory.players_finding_game.popitem()[1]
+        await self.create(
+          gamemode="multiplayer",
+          player_one_sid=player_who_was_waiting["sid"],
+          player_one=player_who_was_waiting,
+          player_two_sid=sid,
+          player_two=user_to_save_in_memory
+        )
+        self.games_memory.players_in_game[player_who_was_waiting["sid"]] = player_who_was_waiting
+        self.games_memory.players_in_game[sid] = user_to_save_in_memory
+      pass
+    else:
+      self.sio.emit("bad", "modo de jogo invalido", to=sid)
+  
+  async def create(
+    self, 
+    gamemode:str ="algoritmo",
+    player_one_sid:str=None,
+    player_one={}, 
+    player_two_sid:str=None,
+    player_two= {}
+  ):
+    if player_one_sid in self.games_memory.players_in_game:
+      await self.sio.emit("bad", "você já esta em uma partida", to=player_one_sid)
       return 
     
+    player_one_id_on_db = player_one.get("id", None)
+    player_two_id_on_db = player_two.get("id", None)
     game_uuid = uuid4().hex
     created_game = {
-      "mode":"algoritmo", 
-      "x_player_id":None, # Adicionar ids dos usuários para funcionar em multiplayer 
-      "o_player_id":None,
-      "x_player_sid":sid,
-      "o_player_sid":None,
+      "mode":gamemode, 
+      "x_player_id":player_one_id_on_db,
+      "o_player_id":player_two_id_on_db,
+      "x_player_sid":player_one_sid,
+      "o_player_sid":player_two_sid,
       "data": "         ",
       "id": game_uuid,
       "current": "x"
     }
     self.games_memory.running_games[game_uuid] = created_game 
-    
-    self.games_memory.players_in_game[sid] = {
-      "sid":sid,
-      "id": None # Adicionar ids dos usuários para funcionar em multiplayer 
-    }
-    await self.sio.enter_room(sid, game_uuid)
+    await self.sio.enter_room(player_one_sid, game_uuid)
+    if player_two_sid is not None: await self.sio.enter_room(player_two_sid, game_uuid)
+      
     await self.sio.emit("new_game", {
       "data":created_game["data"],
       "gameInfos": {
@@ -102,23 +146,12 @@ class GamesController():
       "winner": game["current"] if result == "win" else None
       }, room=game["id"])
     
-  async def move(self, sid, data):    
+  async def move(self, sid, data):
     if sid not in self.games_memory.players_in_game:
       await self.sio.emit("bad", "você não esta em uma partida", to=sid)
       return 
     
-    game_id = data.get("gameId")
-    position = data.get("position")
-    try: 
-      position = int(position)
-    except ValueError:
-      await self.sio.emit("bad", "a posição precisa ser um inteiro", to=sid)
-      return
-    
-    if position is None or (position < 0 or position > 9): 
-      await self.sio.emit("bad", "posição invalida", to=sid)
-      return
-    
+    game_id = data.get("gameId")    
     game_on_memory = self.games_memory.running_games.get(game_id, None) 
     if game_on_memory is None: 
       await self.sio.emit("bad", "id de partida invalida", to=sid)
@@ -134,8 +167,15 @@ class GamesController():
       await self.sio.emit("bad", "Não é a sua vez de jogar", to=sid)
       return
     
+    position = data.get("position")
+    try: 
+      position = int(position)
+    except ValueError:
+      await self.sio.emit("bad", "a posição precisa ser um numero inteiro", to=sid)
+      return
+    
     game_data = list(game_on_memory["data"])
-    if game_data[position] != " ":  
+    if position is None or (position < 0 or position > 9) or game_data[position] != " ": 
       await self.sio.emit("bad", "posição invalida", to=sid)
       return
     
@@ -149,7 +189,16 @@ class GamesController():
       return
     
     game_on_memory["current"] = "x" if game_on_memory["current"]=="o" else "o"  
-    if game_on_memory["mode"] == "algoritmo": await self.algorithm_move(game_on_memory)
+    if game_on_memory["mode"] == "algoritmo": 
+      await self.algorithm_move(game_on_memory)
+      return
+    await self.sio.emit(
+      "new_move",
+      {
+        "new_data": new_game_data
+      },
+      room=game_on_memory["id"]
+    )  
       
   def delete_game(self, sid=None, game=None):
     if game is None:

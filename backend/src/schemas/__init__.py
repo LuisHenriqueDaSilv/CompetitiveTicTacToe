@@ -1,6 +1,5 @@
 from .userSchema import UserSchema
 from .userValitadionSchema import UserValidationSchema
-from .userResendValidationCodeSchema import UserResendValidationCodeSchema
 from .userLoginSchema import UserLoginSchema
 from .userRequestChangePasswordSchema import UserRequestChangePasswordSchema 
 from .userChangePasswordSchema import UserChangePasswordSchema
