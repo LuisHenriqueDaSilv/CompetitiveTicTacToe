@@ -55,7 +55,11 @@ export default forwardRef<AuthenticationFormHandle, FormPropsInterface>((props, 
             </div>
           )
         })}
-        <button className={styles.submitButton} disabled={isLoading} type="submit">
+        <button  
+          className={styles.submitButton} 
+          disabled={isLoading} 
+          type="submit"
+        >
           {isLoading ? (<LoadingSpinner />) : (<>{props.buttonLabel}</>)}
         </button>
       </form>

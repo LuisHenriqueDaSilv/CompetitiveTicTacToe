@@ -29,7 +29,7 @@ export default function LoginArea() {
       footer={
         <StyledFooter className="formFooter"> 
           Se você ainda não tem uma conta,<br />
-          clique <button onClick={() => { navigate("/criar-conta") }}>aqui</button> para se registrar e comece a jogar!
+          clique <button type="button" onClick={() => { navigate("/criar-conta") }}>aqui</button> para se registrar e comece a jogar!
         </StyledFooter>
       }
       submitAction={login}
@@ -44,7 +44,7 @@ export default function LoginArea() {
           maxLength: 320
         },
         {
-          footer: <StyledFooter className="inputFooter"><button onClick={() => navigate("/recuperar-acesso")}>esqueceu sua senha?</button></StyledFooter>,
+          footer: <StyledFooter className="inputFooter"><button type="button" onClick={() => navigate("/recuperar-acesso")}>esqueceu sua senha?</button></StyledFooter>,
           icon: PasswordIcon,
           type: "password",
           name: "password",
