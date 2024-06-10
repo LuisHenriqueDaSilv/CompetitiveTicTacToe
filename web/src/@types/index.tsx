@@ -65,19 +65,25 @@ export interface playerInterface {
   id: number | null,
   username: string | null
 }
-export interface gameInfosInterface {
-  mode: "multiplayer" | "algoritmo",
-  o_player: playerInterface | null,
-  x_player: playerInterface | null,
-  id: string,
-  current: "x" | "o",
-}
-export interface newGameDataInterface {
-  data: "",
-  gameInfos: gameInfosInterface
-}
-export interface newMoveDataInterface {
-  new_data: ""
+export interface gameInterface {
+  data:string,
+  game_infos: {
+    mode:"multiplayer" | "algoritmo",
+    result: false | "tie" | "win",
+    winner: null|"x"|"o"
+    id:string,
+    current: "x" | "o",
+    o_player: {
+      username: String|null,
+      sid: String,
+      id: number|null
+    },
+    x_player: {
+      username: String|null,
+      sid: String,
+      id: number|null
+    }
+  }
 }
 export interface endGameEventInterface {
   result: "win" | "tie",
