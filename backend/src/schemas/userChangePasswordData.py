@@ -5,7 +5,7 @@ from fastapi import status, HTTPException
 from src.utils.formBodyParser import form_body, Form
 
 @form_body
-class UserChangePasswordSchema(BaseModel):
+class UserChangePasswordData(BaseModel):
   new_password:str = Form(...)
   validation_token: str = Form(...)
 

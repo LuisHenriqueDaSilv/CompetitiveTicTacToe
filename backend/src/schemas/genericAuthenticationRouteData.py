@@ -1,14 +1,12 @@
 import re
-from fastapi.exceptions import HTTPException
-from fastapi import Form, status
+from fastapi import status, HTTPException
 from pydantic import BaseModel, field_validator
-
-from src.utils import form_body
+from src.utils.formBodyParser import Form, form_body
 
 @form_body
-class UserValidationSchema(BaseModel):
-  email:str= Form(...)
-  code:str= Form()
+class GenericAuthenticationRouteData(BaseModel):
+
+  email: str = Form(...)
 
   @field_validator("email")
   @staticmethod
@@ -17,16 +15,6 @@ class UserValidationSchema(BaseModel):
     if not re.match(validate_email_regex, value):
       raise HTTPException(
         detail="email invalido",
-        status_code=status.HTTP_400_BAD_REQUEST
-      )
-    return value
-    
-  @field_validator("code")
-  @staticmethod
-  def validate_code(value):
-    if not re.match(r"^\d{4}$", value):
-      raise HTTPException(
-        detail="código invalido",
         status_code=status.HTTP_400_BAD_REQUEST
       )
     return value

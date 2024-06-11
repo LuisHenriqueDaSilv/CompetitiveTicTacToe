@@ -8,10 +8,10 @@ from passlib.context import CryptContext
 
 from src.emails import user_validation_email, change_password_email
 from src.db.models import UserModel
-from src.schemas import UserSchema, \
-  UserValidationSchema, \
-  UserRequestChangePasswordSchema, \
-  UserChangePasswordSchema
+from src.schemas import UserData, \
+  UserValidationData, \
+  UserRequestChangePasswordData, \
+  UserChangePasswordData
 from src.services import JWTService, EmailService
 
 crypt_context = CryptContext(schemes=['sha256_crypt'])
@@ -21,7 +21,7 @@ class AuthenticationController():
   def __init__(self, email_service: EmailService):
     self.email_service = email_service
 
-  def signup(self, request_data: UserSchema, db_session:Session):
+  def signup(self, request_data: UserData, db_session:Session):
     exist_user_on_db = db_session.query(UserModel).where(or_(UserModel.email==request_data.email, UserModel.username==request_data.username)).first()
     if exist_user_on_db is not None:
       if not exist_user_on_db.validated and exist_user_on_db.email == request_data.email:
@@ -79,7 +79,7 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
   
-  def login(self, request_data, user_on_db:UserSchema): 
+  def login(self, request_data, user_on_db:UserData): 
     
     password_is_valid = crypt_context.verify(request_data.password, user_on_db.password)
     if not password_is_valid:
@@ -94,7 +94,7 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
 
-  def validate_email(self, request_data:UserValidationSchema, user_on_db:UserModel, db_session:Session):
+  def validate_email(self, request_data:UserValidationData, user_on_db:UserModel, db_session:Session):
 
     if user_on_db.validation_code != int(request_data.code):
       raise HTTPException(
@@ -147,7 +147,7 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
   
-  def request_change_password(self, request_data: UserRequestChangePasswordSchema, user_on_db:UserModel):
+  def request_change_password(self, request_data: UserRequestChangePasswordData, user_on_db:UserModel):
       
     change_password_token = JWTService.encode(
       username=user_on_db.username,
@@ -172,7 +172,7 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
     
-  def change_password(self, request_data: UserChangePasswordSchema, db_session:Session):
+  def change_password(self, request_data: UserChangePasswordData, db_session:Session):
     
     token_data = {}
     try:

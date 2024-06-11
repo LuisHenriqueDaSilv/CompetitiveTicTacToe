@@ -67,9 +67,9 @@ export interface playerInterface {
 }
 export interface gameInterface {
   data:string,
-  game_infos: {
+  infos: {
     mode:"multiplayer" | "algoritmo",
-    result: false | "tie" | "win",
+    result: false | "tie" | "win" | "giveup",
     winner: null|"x"|"o"
     id:string,
     current: "x" | "o",
@@ -84,10 +84,6 @@ export interface gameInterface {
       id: number|null
     }
   }
-}
-export interface endGameEventInterface {
-  result: "win" | "tie",
-  winner: "x" | "o" | ""
 }
 
 export interface FormPropsInterface {

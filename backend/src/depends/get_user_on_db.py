@@ -2,11 +2,11 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 
 from src.db.models import UserModel
-from src.schemas import GenericAuthenticationRouteSchema
+from src.schemas import GenericAuthenticationRouteData
 from .get_db_session import get_db_session
 
 def get_user_on_db(
-  request_data: GenericAuthenticationRouteSchema = Depends(GenericAuthenticationRouteSchema, use_cache=True),
+  request_data: GenericAuthenticationRouteData = Depends(GenericAuthenticationRouteData, use_cache=True),
   db_session:Session= Depends(get_db_session)
 ):
     user_on_db = db_session.query(UserModel).filter_by(email=request_data.email).one_or_none()

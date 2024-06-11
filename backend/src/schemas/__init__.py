@@ -1,6 +1,10 @@
-from .userSchema import UserSchema
-from .userValitadionSchema import UserValidationSchema
-from .userLoginSchema import UserLoginSchema
-from .userRequestChangePasswordSchema import UserRequestChangePasswordSchema 
-from .userChangePasswordSchema import UserChangePasswordSchema
-from .genericAuthenticationRouteSchema import GenericAuthenticationRouteSchema
+from .userData import UserData
+from .userValitadionData import UserValidationData
+from .userLoginData import UserLoginData
+from .userRequestChangePasswordData import UserRequestChangePasswordData 
+from .userChangePasswordData import UserChangePasswordData
+from .genericAuthenticationRouteData import GenericAuthenticationRouteData
+from .onSearchGameData import OnSearchGameData
+from .gameData import GameData, GameInfosData
+from .playerData import PlayerData
+from .onMoveData import OnMoveData

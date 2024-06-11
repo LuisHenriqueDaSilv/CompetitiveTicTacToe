@@ -1,5 +1,4 @@
 from jose import jwt, JWTError
-from socketio import AsyncServer
 from datetime import datetime, timedelta, timezone
 from dotenv import dotenv_values
 from fastapi import Depends, HTTPException, status, Request
@@ -8,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from src.depends import get_db_session
 from src.db.models import UserModel
-from src.db.connection import Session as DbSession
 
 JWT_SECRET = dotenv_values().get("JWT_SECRET")
 JWT_ALGORITHM = dotenv_values().get("JWT_ALGORITHM")
@@ -40,26 +38,6 @@ class JWTService():
     except JWTError:
       raise "token invalido"
     
-  
-  @staticmethod 
-  def socket_decode_token_middleware(function):
-    async def wrapper(self, sid: str, data, *args, **kwargs):
-      user_on_db = {}
-      author_session = await self.sio.get_session(sid)
-      author_token = author_session["authentication_jwt"]
-      if author_token is not None:
-        try:
-          token_payload = JWTService.decode(author_token)
-          db_session = DbSession()
-          user_on_db = db_session.query(UserModel).filter_by(username=token_payload["sub"]).one_or_none()
-          db_session.close()
-        except: 
-          pass
-      if user_on_db is None:
-        user_on_db = {}
-      await function(self, sid, data, user_on_db, *args, **kwargs)
-    return wrapper
-    
   @staticmethod
   def token_verifier(
     request:Request,
@@ -73,14 +51,12 @@ class JWTService():
         detail="token invalido",
         status_code=status.HTTP_401_UNAUTHORIZED
       )
-      
+
     user_on_db = db_session.query(UserModel).filter_by(username=data["sub"]).first()
-    
     if user_on_db is None:
       raise HTTPException(
         detail="token invalido",
         status_code=status.HTTP_401_UNAUTHORIZED
       )
-
     request.state.user = user_on_db
     

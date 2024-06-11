@@ -7,7 +7,6 @@ import {
   gameContextProviderValuesInterface,
   gameContextProviderParamsInterface,
   gameInterface,
-  endGameEventInterface
 } from "../@types"
 
 export const GameContext = createContext({} as gameContextProviderValuesInterface)
@@ -28,38 +27,46 @@ export function GameContextProvider({ children }: gameContextProviderParamsInter
 
   function findGame() {
     setIsFindingGame(true);
-    socketClient.emit("searching_new_game", { gamemode })
+    socketClient.emit("wanna_play", { gamemode })
   }
 
   function submitMove(position: number) {
     if (!inGame || !game) { return alert("Algo de inesperado ocorreu") }
-    socketClient.emit("move", { gameId: game.game_infos.id, position })
+    socketClient.emit("move", { id: game.infos.id, position })
 
     const gameDataClone = [...gamedata]
-    gameDataClone[position] = game.game_infos.current
+    gameDataClone[position] = game.infos.current
     setGamedata(gameDataClone)
     setIsMyTurn(false)
   }
 
   useEffect(() => {
 
-
     function onNewMove(data: gameInterface) {
       setTimeout(() => {
         setGamedata(data.data.split(""))
         setGame(data)
         setIsMyTurn(true)
-        if(data.game_infos.result){ 
+        if(data.infos.result){ 
           setTimeout(() => {
-            if (data.game_infos.result == "win") { alert(`Temos um vencedor! Parabens, ${data.game_infos.winner}`) }
-            if (data.game_infos.result == "tie") { alert("Temos um empate. Boa sorte na próxima!") }
+            switch (data.infos.result) {
+              case "win":
+                alert(`Temos um vencedor! Parabens, ${data.infos.winner}`)
+                break;
+              case "tie":
+                alert("Temos um empate. Boa sorte na próxima!")
+                break;
+              case "giveup":
+                alert("Seu oponente desistiu da partida!")
+                break;
+            }
             setInGame(false)
             setGamedata([])
             setGame(null)
             boardRouter.navigate("/encontrar-partida")
           }, 1000)
         }
-      }, game?.game_infos.mode == "algoritmo" ? 500 : 0)
+      }, game?.infos.mode == "algoritmo" ? 500 : 0)
     }
 
     socketClient.on("new_move", onNewMove)

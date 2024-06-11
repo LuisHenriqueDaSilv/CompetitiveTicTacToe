@@ -6,7 +6,7 @@ from pydantic import BaseModel, field_validator
 from src.utils import form_body
 
 @form_body
-class UserSchema(BaseModel):
+class UserData(BaseModel):
   username: str = Form(...)
   password: str = Form(...)
   email: str = Form(...)

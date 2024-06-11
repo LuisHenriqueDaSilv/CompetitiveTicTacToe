@@ -1,13 +1,14 @@
 import re
+from fastapi.exceptions import HTTPException
+from fastapi import Form, status
 from pydantic import BaseModel, field_validator
-from fastapi import HTTPException, status
-from src.utils.formBodyParser import form_body, Form
 
+from src.utils import form_body
 
 @form_body
-class UserLoginSchema(BaseModel):
-  email: str = Form(...)
-  password: str = Form(...)
+class UserValidationData(BaseModel):
+  email:str= Form(...)
+  code:str= Form()
 
   @field_validator("email")
   @staticmethod
@@ -19,13 +20,13 @@ class UserLoginSchema(BaseModel):
         status_code=status.HTTP_400_BAD_REQUEST
       )
     return value
-  
-  @field_validator("password")
+    
+  @field_validator("code")
   @staticmethod
-  def validate_password(password):
-    if len(password)>50:
+  def validate_code(value):
+    if not re.match(r"^\d{4}$", value):
       raise HTTPException(
-        detail="senha invalida",
+        detail="código invalido",
         status_code=status.HTTP_400_BAD_REQUEST
       )
-    return password
+    return value

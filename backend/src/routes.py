@@ -8,11 +8,11 @@ from .depends import get_db_session, get_user_on_db
 from .services import JWTService, EmailService
 from .controllers import AuthenticationController
 from .schemas import \
-  UserSchema, \
-  UserValidationSchema, \
-  UserLoginSchema, \
-  UserRequestChangePasswordSchema, \
-  UserChangePasswordSchema
+  UserData, \
+  UserValidationData, \
+  UserLoginData, \
+  UserRequestChangePasswordData, \
+  UserChangePasswordData
 
 # Email server settings
 EMAIL_PASSWORD=dotenv_values().get("GMAIL_APP_PASSWORD", None)
@@ -36,14 +36,14 @@ def health_check() -> JSONResponse:
 
 @authentication_router.post("/registro")
 def user_signup(
-  data: UserSchema=Depends(UserSchema),
+  data: UserData=Depends(UserData),
   db_session:Session=Depends(get_db_session)
 ) -> JSONResponse: 
   return authentication_controller.signup(data, db_session)
 
 @authentication_router.post("/validar")
 def user_validate_email(
-  data: UserValidationSchema=Depends(UserValidationSchema),
+  data: UserValidationData=Depends(UserValidationData),
   db_session:Session=Depends(get_db_session),
   user_on_db:UserModel =Depends(get_user_on_db)
 ) -> JSONResponse: 
@@ -58,21 +58,21 @@ def user_resend_validation_code(
   
 @authentication_router.post("/login")
 def user_login(
-  data: UserLoginSchema=Depends(UserLoginSchema),
+  data: UserLoginData=Depends(UserLoginData),
   user_on_db:UserModel =Depends(get_user_on_db)
 ) -> JSONResponse: 
   return authentication_controller.login(data, user_on_db)
 
 @authentication_router.post("/alterar-senha")
 def request_change_password(
-  data: UserRequestChangePasswordSchema=Depends(UserRequestChangePasswordSchema),
+  data: UserRequestChangePasswordData=Depends(UserRequestChangePasswordData),
   user_on_db:UserModel =Depends(get_user_on_db)
 ): 
   return authentication_controller.request_change_password(data, user_on_db)
 
 @authentication_router.post("/alterar-senha/confirmar")
 def change_password(
-  data: UserChangePasswordSchema=Depends(UserChangePasswordSchema),
+  data: UserChangePasswordData=Depends(UserChangePasswordData),
   db_session: Session=Depends(get_db_session)
 ): 
   return authentication_controller.change_password(data, db_session)
