@@ -75,12 +75,10 @@ export interface gameInterface {
     current: "x" | "o",
     o_player: {
       username: String|null,
-      sid: String,
       id: number|null
     },
     x_player: {
       username: String|null,
-      sid: String,
       id: number|null
     }
   }

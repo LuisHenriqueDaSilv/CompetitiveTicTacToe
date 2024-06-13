@@ -16,6 +16,7 @@ from src.algorithm import Algorithm
 class GamesController():
   sio: AsyncServer = None
   games_memory:GamesMemoryDatabase = GamesMemoryDatabase()
+  algorithm_player = PlayerData( id=0, username="🤖-Robo", sid="00" )
 
   def __init__(self, sio:AsyncServer):
     self.sio = sio
@@ -31,10 +32,10 @@ class GamesController():
     else: self.sio.emit("bad", "modo de jogo invalido", to=sid)
   
   async def create_algorithm_game(self, sid):
-    new_player = PlayerData( id=None, username=None, sid=sid )
-    created_game = GameData( infos=GameInfosData( mode="algoritmo", x_player=new_player ) )
+    new_player = PlayerData( id=None, username="🧑-eu", sid=sid )
+    created_game = GameData( infos=GameInfosData( mode="algoritmo", x_player=new_player, o_player=self.algorithm_player ) )
     self.games_memory.save_game(created_game)
-    await self.sio.emit("new_game", created_game.model_dump(), to=new_player.sid)
+    await self.sio.emit("new_game", created_game.get_dict(), to=new_player.sid)
     self.games_memory.set_player_in_game(new_player)
   
   @socket_authenticate
@@ -58,8 +59,8 @@ class GamesController():
     self.games_memory.save_game(created_game)
     self.games_memory.set_player_in_game(new_player)
     self.games_memory.set_player_in_game(player_who_is_waiting)
-    await self.sio.emit("new_game", created_game.model_dump(), to=new_player.sid)
-    await self.sio.emit("new_game", created_game.model_dump(), to=player_who_is_waiting.sid)
+    await self.sio.emit("new_game", created_game.get_dict(), to=new_player.sid)
+    await self.sio.emit("new_game", created_game.get_dict(), to=player_who_is_waiting.sid)
   
   @socket_data_parser(OnMoveData)
   async def move(self, sid, data:OnMoveData):
@@ -83,9 +84,9 @@ class GamesController():
     game_result = Algorithm.verify_result(game.data)
     if game_result: 
       self.finish_game(game, game_result)
-      await self.sio.emit( "new_move", game.model_dump(), to=game.infos.x_player.sid )
+      await self.sio.emit( "new_move", game.get_dict(), to=game.infos.x_player.sid )
       if game.infos.mode == "multiplayer":
-        await self.sio.emit( "new_move", game.model_dump(), to=game.infos.o_player.sid )
+        await self.sio.emit( "new_move", game.get_dict(), to=game.infos.o_player.sid )
       return
     
     game.infos.current = "x" if game.infos.current == "o" else "o"
@@ -101,7 +102,7 @@ class GamesController():
     to_sid = None
     if player_is_x and game.infos.mode == "multiplayer": to_sid = game.infos.o_player.sid
     else: to_sid = game.infos.x_player.sid 
-    await self.sio.emit( "new_move", game.model_dump(), to=to_sid )
+    await self.sio.emit( "new_move", game.get_dict(), to=to_sid )
     
   def finish_game(self, game:GameData, result:str, winner=None):
     game.infos.result=result
@@ -133,4 +134,4 @@ class GamesController():
     
     if game.infos.mode == "algoritmo": return
     to_sid = game.infos.x_player.sid  if player_is_o else game.infos.o_player.sid  
-    await self.sio.emit( "new_move", game.model_dump(), to=to_sid )
+    await self.sio.emit( "new_move", game.get_dict(), to=to_sid )
