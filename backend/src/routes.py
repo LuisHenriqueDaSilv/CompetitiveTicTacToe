@@ -2,8 +2,9 @@ from dotenv import dotenv_values
 from fastapi import APIRouter, Depends, status, Request
 from fastapi.responses import JSONResponse 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
-from src.db.models import UserModel 
+from src.db.models import UserModel, MultiplayerGameModel
 from .depends import get_db_session, get_user_on_db
 from .services import JWTService, EmailService
 from .controllers import AuthenticationController
@@ -85,6 +86,25 @@ def user_authorization_test(
     content={
       "detail":"autenticado",
       "username": request.state.user.username
+    },
+    status_code=status.HTTP_200_OK
+  )
+
+@global_router.get("/ranking")
+def get_ranking(
+  db_session:Session = Depends(get_db_session)
+) -> JSONResponse:
+  top_ten_users = (
+    db_session.query(UserModel, func.count(MultiplayerGameModel.id).label("wins_count"))
+    .outerjoin(UserModel.wins)
+    .group_by(UserModel.id)
+    .order_by(func.count(MultiplayerGameModel.id).desc())
+  ).limit(10).all()
+  
+  raking = [{"username": user.username, "wins": wins_count} for user, wins_count in top_ten_users]
+  return JSONResponse(
+    content={
+      "ranking": raking 
     },
     status_code=status.HTTP_200_OK
   )
