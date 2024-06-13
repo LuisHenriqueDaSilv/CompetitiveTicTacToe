@@ -13,10 +13,7 @@ export const GameContext = createContext({} as gameContextProviderValuesInterfac
 
 export function GameContextProvider({ children }: gameContextProviderParamsInterface) {
 
-  const {
-    getJwt,
-    authenticated
-  } = useContext(AuthenticationContext)
+  const { getJwt, authenticated, playerInfos } = useContext(AuthenticationContext)
 
   const [inGame, setInGame] = useState<boolean>(false)
   const [gamemode, setGamemode] = useState<"multiplayer" | "algoritmo">("algoritmo")
@@ -41,7 +38,23 @@ export function GameContextProvider({ children }: gameContextProviderParamsInter
   }
 
   useEffect(() => {
+  }, [])
 
+  useEffect(() => {
+    socketClient.connect()
+    function onBad(data: string) {
+      alert(data)
+    }
+    function onNewGame(data: gameInterface) {
+      setInGame(true)
+      setGamedata(data.data.split(""))
+      setGame(data)
+      setIsFindingGame(false)
+      const gameIsAlgorithm = data.infos.mode == "algoritmo"
+      const isMyTurn = gameIsAlgorithm || data.infos.x_player.username == playerInfos?.username
+      setIsMyTurn(isMyTurn)
+      boardRouter.navigate("/game")
+    }
     function onNewMove(data: gameInterface) {
       setTimeout(() => {
         setGamedata(data.data.split(""))
@@ -68,31 +81,15 @@ export function GameContextProvider({ children }: gameContextProviderParamsInter
         }
       }, game?.infos.mode == "algoritmo" ? 500 : 0)
     }
-
     socketClient.on("new_move", onNewMove)
-    return () => { socketClient?.off("new_move", onNewMove) }
-  }, [game, gamedata])
-
-  useEffect(() => {
-    socketClient.connect()
-    function onBad(data: string) {
-      alert(data)
-    }
-    function onNewGame(data: gameInterface) {
-      setInGame(true)
-      setGamedata(data.data.split(""))
-      setGame(data)
-      setIsFindingGame(false)
-      setIsMyTurn(true)
-      boardRouter.navigate("/game")
-    }
     socketClient.on("bad", onBad)
     socketClient.on("new_game", onNewGame)
     return () => {
+      socketClient?.off("new_move", onNewMove) 
       socketClient.off("bad", onBad)
       socketClient.off("new_game", onNewGame)
     }
-  }, [])
+  }, [game, playerInfos])
 
   useEffect(() => {
     socketClient.disconnect()
