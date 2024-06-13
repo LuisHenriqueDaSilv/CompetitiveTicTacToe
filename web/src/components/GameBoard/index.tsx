@@ -8,7 +8,7 @@ export default function GameBoard() {
 
   const navigate = useNavigate()
 
-  const { gamedata, submitMove, isMyTurn, inGame } = useContext(GameContext)
+  const { gamedata, submitMove, isMyTurn, inGame, game } = useContext(GameContext)
 
   if(!inGame){
     navigate("/")
@@ -18,7 +18,7 @@ export default function GameBoard() {
     <div className={styles.container}>
       <aside className={styles.playersInfosContainer}>
         <section className={styles.playerInfos}>
-          <p>xxxxxxxxxx</p>
+          <p>{game?.infos.x_player.username}</p>
           <div>
             <p>xx</p>
             <img src={MedalIcon} />
@@ -26,7 +26,7 @@ export default function GameBoard() {
         </section>
         <span>VS</span>
         <section className={styles.playerInfos}>
-          <p>xxxxxxxxxx</p>
+          <p>{game?.infos.o_player.username}</p>
           <div>
             <p>xx</p>
             <img src={MedalIcon} />

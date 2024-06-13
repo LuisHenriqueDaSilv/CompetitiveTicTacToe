@@ -58,7 +58,8 @@ export interface gameContextProviderValuesInterface {
   findGame: () => void,
   submitMove: (GameId: number) => void,
   isMyTurn: boolean,
-  isFindingGame: boolean
+  isFindingGame: boolean,
+  game: gameInterface|null
 }
 export interface playerInterface {
   type: "player" | "algorithm",

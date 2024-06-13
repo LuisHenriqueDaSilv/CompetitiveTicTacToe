@@ -116,7 +116,8 @@ export function GameContextProvider({ children }: gameContextProviderParamsInter
       findGame,
       submitMove,
       isMyTurn,
-      isFindingGame
+      isFindingGame,
+      game
     }}>
       {children}
     </GameContext.Provider>
