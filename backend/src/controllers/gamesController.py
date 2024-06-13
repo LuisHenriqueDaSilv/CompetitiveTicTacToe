@@ -7,8 +7,9 @@ from src.schemas import \
   PlayerData, \
   GameInfosData, \
   OnMoveData
-from src.db.models import UserModel
+from src.db.models import UserModel, MultiplayerGameModel
 from src.db.gamesMemoryDatabase import GamesMemoryDatabase
+from src.db.connection import Session as DbSession
 from src.middlewares import socket_authenticate
 from src.algorithm import Algorithm
 
@@ -82,8 +83,9 @@ class GamesController():
     game_result = Algorithm.verify_result(game.data)
     if game_result: 
       self.finish_game(game, game_result)
-      await self.sio.emit( "new_move", game.model_dump(), to=game.infos.o_player.sid )
       await self.sio.emit( "new_move", game.model_dump(), to=game.infos.x_player.sid )
+      if game.infos.mode == "multiplayer":
+        await self.sio.emit( "new_move", game.model_dump(), to=game.infos.o_player.sid )
       return
     
     game.infos.current = "x" if game.infos.current == "o" else "o"
@@ -103,8 +105,22 @@ class GamesController():
     
   def finish_game(self, game:GameData, result:str, winner=None):
     game.infos.result=result
-    if winner is None: game.infos.winner = game.infos.current
-    else: game.infos.winner = winner
+    if winner is None: winner = game.infos.current
+    game.infos.winner = winner
+    if game.infos.mode == "multiplayer":
+      winner_id = game.infos.x_player.id if winner == "x" else game.infos.o_player.id
+      try:
+        db_session = DbSession()
+        created_game = MultiplayerGameModel(
+          data=game.data,
+          winner_id=winner_id,
+          x_player_id=game.infos.x_player.id,
+          o_player_id=game.infos.o_player.id,
+        )
+        db_session.add(created_game)
+        db_session.commit()
+        db_session.close()
+      except: pass
     self.games_memory.delete_game(game)  
       
   async def disconnect_player(self, sid):

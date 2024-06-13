@@ -4,7 +4,7 @@ from src.db.models import UserModel
 
 def socket_authenticate(function):
   async def wrapper(self, sid: str, data, *args, **kwargs):
-    user_on_db = {}
+    user_on_db = None
     author_session = await self.sio.get_session(sid)
     author_token = author_session["authentication_jwt"]
     if author_token is not None:
