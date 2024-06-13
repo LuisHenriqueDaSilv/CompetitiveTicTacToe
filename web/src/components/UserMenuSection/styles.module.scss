@@ -1,0 +1,33 @@
+.userSection {
+  border: none;
+  gap: 1rem;
+
+  .userName {
+    display: flex;
+    width: 100%;
+
+    h1 {
+      margin-right: auto;
+    }
+
+    button {
+      margin-left: 2rem;
+      background: none;
+      border: none;
+    }
+  }
+
+  .info {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+
+    * {
+      font-size: 2rem;
+    }
+
+    span {
+      margin-left: auto;
+    }
+  }
+}
