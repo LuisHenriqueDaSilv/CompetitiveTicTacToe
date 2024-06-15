@@ -7,17 +7,13 @@ import { axiosClient } from '../../services/axios'
 export default function RakingSection() {
 
   const [ranking, setRanking] = useState<{ username: string, wins: number }[]>([])
-  const [loadingRanking, setLoadingRanking] = useState<boolean>(false)
 
   async function fetchRanking() {
-    setLoadingRanking(true)
     await axiosClient.get('/ranking').then((response) => {
-      console.log(response.data)
       setRanking(response.data.ranking)
     }).catch(() => {
       alert("Algo de inesperado ocorreu enquanto buscavamos o rank")
     })
-    setLoadingRanking(false)
   }
 
   useEffect(() => {
