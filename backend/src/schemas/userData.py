@@ -11,7 +11,7 @@ class UserData(BaseModel):
   username: str = Form()
   password: str = Form()
   email: str = Form()
-  redirect_url: Optional[str] =  Form()
+  redirect_url: str =  Form()
   
   @field_validator("username")
   @staticmethod

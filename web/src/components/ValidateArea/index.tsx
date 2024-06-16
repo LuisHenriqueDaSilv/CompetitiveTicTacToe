@@ -1,4 +1,5 @@
-import { FormEvent, KeyboardEvent, useContext, useRef, useState } from "react"
+import { FormEvent, KeyboardEvent, useContext, useEffect, useRef, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { useLocation, useNavigate } from "react-router"
 
 import { AuthenticationContext } from "../../contexts/authenticationContext"
@@ -12,6 +13,8 @@ export default function ValidateArea() {
   const { validateEmail, fetchPlayerData, saveJwt, resendValidationCode } = useContext(AuthenticationContext)
   const { state } = useLocation()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [email, setEmail] = useState<string>("")
 
   const [validationCode, setValidationCode] = useState<string[]>(["", "", "", ""])
   const [error, setError] = useState<string | null>(null)
@@ -70,7 +73,7 @@ export default function ValidateArea() {
 
     await validateEmail({
       code: validationCode.join(""),
-      email: state.email
+      email: email
     }).then(async (response) => {
       const jwt = response.data.authentication.token
       await fetchPlayerData(jwt)
@@ -88,10 +91,21 @@ export default function ValidateArea() {
 
   }
 
-  if (!state) {
-    navigate("/")
-    return
-  }
+  useEffect(() => {
+    const searchParamsCode = searchParams.get("code")
+    const searchParamsEmail = searchParams.get("email")
+    if(state) {
+      setEmail(state.email)
+    } else if (searchParamsEmail && searchParamsCode){
+      setEmail(searchParamsEmail)
+      setValidationCode(searchParamsCode.split(""))
+    } else {
+      navigate("/")
+      return
+    }
+
+  }, [])
+
 
   return (
     <div className={styles.container}>

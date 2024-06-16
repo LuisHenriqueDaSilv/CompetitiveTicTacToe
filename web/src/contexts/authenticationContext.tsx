@@ -53,8 +53,8 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
   }
 
   function requestChangePassword(data: unknown) {
-    const hostname = window.location.origin
     const { email } = data as requestChangePasswordParamInterface
+    const hostname = window.location.origin
     const formData = new FormData()
     formData.append("email", email)
     formData.append("redirect_url", `${hostname}/recuperar-acesso/nova-senha`)
@@ -91,10 +91,12 @@ export function AuthenticationContextProvider({ children }: { children: ReactNod
   }
   async function signup(values: unknown) {
     const { email, password, username } = values as SignupParamInterface
+    const hostname = window.location.origin
     const formData = new FormData()
     formData.append("email", email)
     formData.append("password", password)
     formData.append("username", username)
+    formData.append("redirect_url", `${hostname}/validar`)
     return axiosClient.post("/autenticacao/registro", formData)
   }
   

@@ -50,7 +50,7 @@ class AuthenticationController():
     )
     
     try:
-      email_data = user_validation_email(self.email_service, created_user)
+      email_data = user_validation_email(self.email_service, created_user, request_data.redirect_url)
       self.email_service.send_email(email_data)
     except:
       raise HTTPException(
