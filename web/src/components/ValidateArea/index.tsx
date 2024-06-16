@@ -99,6 +99,7 @@ export default function ValidateArea() {
     } else if (searchParamsEmail && searchParamsCode){
       setEmail(searchParamsEmail)
       setValidationCode(searchParamsCode.split(""))
+      setSearchParams("")
     } else {
       navigate("/")
       return
