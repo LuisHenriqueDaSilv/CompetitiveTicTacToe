@@ -79,7 +79,7 @@ class AuthenticationController():
       status_code=status.HTTP_200_OK
     )
   
-  def login(self, request_data, user_on_db:UserData): 
+  def login(self, request_data, user_on_db:UserModel): 
     
     password_is_valid = crypt_context.verify(request_data.password, user_on_db.password)
     if not password_is_valid:
