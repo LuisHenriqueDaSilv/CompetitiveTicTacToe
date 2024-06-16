@@ -2,14 +2,16 @@ import re
 from fastapi import Form, status
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel, field_validator
+from typing import Optional
 
 from src.utils import form_body
 
 @form_body
 class UserData(BaseModel):
-  username: str = Form(...)
-  password: str = Form(...)
-  email: str = Form(...)
+  username: str = Form()
+  password: str = Form()
+  email: str = Form()
+  redirect_url: Optional[str] =  Form()
   
   @field_validator("username")
   @staticmethod

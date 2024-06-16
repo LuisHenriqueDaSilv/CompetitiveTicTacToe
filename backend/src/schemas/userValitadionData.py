@@ -7,7 +7,7 @@ from src.utils import form_body
 
 @form_body
 class UserValidationData(BaseModel):
-  email:str= Form(...)
+  email:str= Form()
   code:str= Form()
 
   @field_validator("email")

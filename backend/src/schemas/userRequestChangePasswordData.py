@@ -6,8 +6,8 @@ from src.utils.formBodyParser import Form, form_body
 
 @form_body
 class UserRequestChangePasswordData(BaseModel):
-  email: str = Form(...)
-  redirect_url: str = Form(...)
+  email: str = Form()
+  redirect_url: str = Form()
   
   @field_validator("email")
   @staticmethod

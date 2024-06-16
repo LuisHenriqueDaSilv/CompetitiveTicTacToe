@@ -1,4 +1,3 @@
-import re
 from pydantic import BaseModel, field_validator
 from fastapi import status, HTTPException
 
@@ -6,8 +5,8 @@ from src.utils.formBodyParser import form_body, Form
 
 @form_body
 class UserChangePasswordData(BaseModel):
-  new_password:str = Form(...)
-  validation_token: str = Form(...)
+  new_password:str = Form()
+  validation_token: str = Form()
 
   @field_validator("new_password")
   @staticmethod

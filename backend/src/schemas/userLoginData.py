@@ -6,8 +6,8 @@ from src.utils.formBodyParser import form_body, Form
 
 @form_body
 class UserLoginData(BaseModel):
-  email: str = Form(...)
-  password: str = Form(...)
+  email: str = Form()
+  password: str = Form()
 
   @field_validator("email")
   @staticmethod

@@ -6,7 +6,7 @@ from src.utils.formBodyParser import Form, form_body
 @form_body
 class GenericAuthenticationRouteData(BaseModel):
 
-  email: str = Form(...)
+  email: str = Form()
 
   @field_validator("email")
   @staticmethod
