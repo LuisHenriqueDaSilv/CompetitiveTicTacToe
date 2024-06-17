@@ -12,17 +12,10 @@ import PasswordIcon from '../../assets/password.svg'
 import UserIcon from '../../assets/user.svg'
 
 export default function SignupArea() {
+  const formRef = useRef<AuthenticationFormHandle>(null)
 
   const navigate = useNavigate()
   const { signup } = useContext(AuthenticationContext)
-  const { gamemode } = useContext(GameContext)
-
-  const formRef = useRef<AuthenticationFormHandle>(null)
-
-  if (gamemode == "algoritmo") {
-    navigate("/encontrar-partida")
-    return
-  }
 
   return (
     <AuthenticationForm
