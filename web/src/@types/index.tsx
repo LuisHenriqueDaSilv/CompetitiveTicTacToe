@@ -56,10 +56,11 @@ export interface gameContextProviderValuesInterface {
   gamemode: "multiplayer" | "algoritmo",
   gamedata: string[],
   findGame: () => void,
+  cancelFindGame: () => void,
   submitMove: (GameId: number) => void,
   isMyTurn: boolean,
   isFindingGame: boolean,
-  game: gameInterface|null
+  game: gameInterface|null,
 }
 export interface playerInterface {
   type: "player" | "algorithm",

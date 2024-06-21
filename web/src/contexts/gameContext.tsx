@@ -27,6 +27,11 @@ export function GameContextProvider({ children }: gameContextProviderParamsInter
     socketClient.emit("wanna_play", { gamemode })
   }
 
+  function cancelFindGame(){
+    socketClient.emit("cancel_wanna_play")
+    setIsFindingGame(false)
+  }
+
   function submitMove(position: number) {
     if (!inGame || !game) { return alert("Algo de inesperado ocorreu") }
     socketClient.emit("move", { id: game.infos.id, position })
@@ -114,7 +119,8 @@ export function GameContextProvider({ children }: gameContextProviderParamsInter
       submitMove,
       isMyTurn,
       isFindingGame,
-      game
+      game,
+      cancelFindGame
     }}>
       {children}
     </GameContext.Provider>

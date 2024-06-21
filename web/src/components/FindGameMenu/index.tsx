@@ -9,7 +9,7 @@ import LoadingSpinner from "../LoadingSpinner"
 export default function FindGameMenu() {
 
   const navigate = useNavigate()
-  const { gamemode, findGame, isFindingGame } = useContext(GameContext)
+  const { gamemode, findGame, isFindingGame, cancelFindGame } = useContext(GameContext)
   const { authenticated } = useContext(AuthenticationContext)
 
   if (!authenticated && gamemode == "multiplayer") {
@@ -74,7 +74,7 @@ export default function FindGameMenu() {
           )
         )
       }
-      <button onClick={findGame}>{isFindingGame ? "cancelar" : "iniciar partida"}</button>
+      <button onClick={isFindingGame? cancelFindGame:findGame}>{isFindingGame ? "cancelar" : "iniciar partida"}</button>
     </div>
   )
 }
