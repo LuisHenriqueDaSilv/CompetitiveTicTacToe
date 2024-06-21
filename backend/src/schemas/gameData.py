@@ -7,10 +7,15 @@ class GameInfosData(BaseModel):
     result: str|None = None
     winner: Optional[str] = None
     mode: str
-    id: str = uuid4().hex
+    id: str
     current: str = "x"
     o_player: PlayerData
     x_player: PlayerData
+    
+    def __init__(self, id=None, **kwargs):
+      if id is None:
+        id=uuid4().hex
+      super().__init__(id=id, **kwargs)
   
 
 class GameData(BaseModel):
