@@ -32,8 +32,8 @@ async def handle_player_searching_game(sid, data):
   await games_controller.on_wanna_play(sid, data)
   
 @sio.on("cancel_wanna_play")
-def cancel_game_search(sid, data):
-  games_controller.cancel_wanna_play(sid, data)
+def cancel_game_search(sid):
+  games_controller.cancel_wanna_play(sid)
 
 @sio.on("move")
 async def handle_move(sid, data):
