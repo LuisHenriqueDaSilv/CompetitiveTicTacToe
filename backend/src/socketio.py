@@ -30,7 +30,12 @@ async def handle_socket_disconnection(sid):
 @sio.on("wanna_play")
 async def handle_player_searching_game(sid, data):
   await games_controller.on_wanna_play(sid, data)
+  
+@sio.on("cancel_wanna_play")
+def cancel_game_search(sid, data):
+  games_controller.cancel_wanna_play(sid, data)
 
 @sio.on("move")
 async def handle_move(sid, data):
   await games_controller.move(sid, data)
+  

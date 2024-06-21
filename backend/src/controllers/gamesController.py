@@ -23,13 +23,17 @@ class GamesController():
     
   @socket_data_parser(OnSearchGameData)
   async def on_wanna_play(self, sid, data:OnSearchGameData):
-    if sid in self.games_memory.players_in_game.keys():
+    if sid in self.games_memory.players_in_game:
       await self.sio.emit("bad", "você já esta em uma partida", to=sid)
       return 
     
     if data.gamemode == "algoritmo": await self.create_algorithm_game(sid)
-    elif data.gamemode == "multiplayer": await self.find_multiplayer_match(sid, data)
+    elif data.gamemode == "multiplayer": await self.find_multiplayer_game(sid, data)
     else: self.sio.emit("bad", "modo de jogo invalido", to=sid)
+  
+  def cancel_wanna_play(self, sid):
+    if sid not in self.games_memory.players_queue: return
+    self.games_memory.remove_player_from_queue(sid)
   
   async def create_algorithm_game(self, sid):
     new_player = PlayerData( id=None, username="🧑-eu", sid=sid )
@@ -39,39 +43,44 @@ class GamesController():
     self.games_memory.set_player_in_game(new_player)
   
   @socket_authenticate
-  async def find_multiplayer_match(self, sid, _, user_on_db:UserModel):
+  async def find_multiplayer_game(self, sid, _, user_on_db:UserModel):
     if user_on_db is None:
       await self.sio.emit("bad", "usuário não autenticado",to=sid)
       return
     
-    new_player = PlayerData( id=user_on_db.id, sid=sid, username=user_on_db.username )
-    has_player_waiting_for_game = len(self.games_memory.players_finding_game.keys()) > 0
-    if not has_player_waiting_for_game:
-      self.games_memory.set_player_searching_game(new_player)
+    if sid in self.games_memory.players_queue:
+      await self.sio.emit("bad", "você já esta buscando uma partida", to=sid) 
       return
-    player_who_is_waiting = self.games_memory.get_awaiting_player()
+    
+    new_player = PlayerData( id=user_on_db.id, sid=sid, username=user_on_db.username )
+    player_from_queue = self.games_memory.get_player_in_queue()
+    # if not has player in queue
+    if player_from_queue is None: 
+      self.games_memory.add_player_in_queue(new_player)
+      return
+  
+    self.games_memory.remove_player_from_queue(player_from_queue.sid)
     created_game_infos = GameInfosData(
       mode="multiplayer",
       o_player=new_player,
-      x_player=player_who_is_waiting
+      x_player=player_from_queue
     )
     created_game = GameData(infos=created_game_infos)
     self.games_memory.save_game(created_game)
     self.games_memory.set_player_in_game(new_player)
-    self.games_memory.set_player_in_game(player_who_is_waiting)
+    self.games_memory.set_player_in_game(player_from_queue)
     await self.sio.emit("new_game", created_game.get_dict(), to=new_player.sid)
-    await self.sio.emit("new_game", created_game.get_dict(), to=player_who_is_waiting.sid)
+    await self.sio.emit("new_game", created_game.get_dict(), to=player_from_queue.sid)
   
   @socket_data_parser(OnMoveData)
   async def move(self, sid, data:OnMoveData):
-    game = self.games_memory.get_game_by_player_sid(sid)
-    if game is None:
+    if sid not in self.games_memory.players_in_game:
       await self.sio.emit("bad", "você não está em uma partida", to=sid)
       return
     
-    player_is_x = game.infos.x_player.sid == sid
-    player_is_o = game.infos.o_player.sid == sid if game.infos.mode == "multiplayer" else False
-    if (player_is_o and game.infos.current != "o") or (player_is_x and game.infos.current != "x"):
+    game = self.games_memory.get_game_by_player_sid(sid)
+    player_move_symbol = "o" if game.infos.o_player.sid == sid else "x"
+    if player_move_symbol != game.infos.current:
       await self.sio.emit("bad", "não é a sua vez de jogar", to=sid)
       return
     
@@ -100,7 +109,7 @@ class GamesController():
         self.games_memory.save_game(game)
         
     to_sid = None
-    if player_is_x and game.infos.mode == "multiplayer": to_sid = game.infos.o_player.sid
+    if player_move_symbol == "x" and game.infos.mode == "multiplayer": to_sid = game.infos.o_player.sid
     else: to_sid = game.infos.x_player.sid 
     await self.sio.emit( "new_move", game.get_dict(), to=to_sid )
     
@@ -125,13 +134,16 @@ class GamesController():
     self.games_memory.delete_game(game)  
       
   async def disconnect_player(self, sid):
-    # test = 0/0
-    game = self.games_memory.get_game_by_player_sid(sid)
-    if game is None: return
-    player_is_o = game.infos.o_player.sid == sid if game.infos.mode == "multiplayer" else False
-    winner = "x" if player_is_o else "o"
-    self.finish_game(game, "giveup", winner)
-    
-    if game.infos.mode == "algoritmo": return
-    to_sid = game.infos.x_player.sid  if player_is_o else game.infos.o_player.sid  
-    await self.sio.emit( "new_move", game.get_dict(), to=to_sid )
+    if sid in self.games_memory.players_in_game:      
+      game = self.games_memory.get_game_by_player_sid(sid)
+      player_is_o = game.infos.o_player.sid == sid if game.infos.mode == "multiplayer" else False
+      winner = "x" if player_is_o else "o"
+      self.finish_game(game, "giveup", winner)
+      
+      if game.infos.mode == "multiplayer": 
+        to_sid = game.infos.x_player.sid  if player_is_o else game.infos.o_player.sid  
+        await self.sio.emit( "new_move", game.get_dict(), to=to_sid )
+        
+    if sid in self.games_memory.players_queue:
+      self.games_memory.remove_player_from_queue(sid)
+       
