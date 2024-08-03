@@ -6,7 +6,7 @@ import { AuthenticationContext } from "../../contexts/authenticationContext";
 import {AuthenticationFormHandle} from '../../@types'
 import PasswordIcon from '../../assets/password.svg'
 
-export default function ChangePasswordArea(){
+export default function ChangePasswordForm(){
 
   const navigate = useNavigate()
   const formRef = useRef<AuthenticationFormHandle>(null)

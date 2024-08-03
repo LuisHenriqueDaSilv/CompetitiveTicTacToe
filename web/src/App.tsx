@@ -1,7 +1,12 @@
 import BoardRouter from "./contexts/boardRouter"
-import AsideMenu from './components/AsideMenu'
 import { RouterProvider } from 'react-router-dom'
+
+import Raking from './components/Ranking'
+import UserInfos from './components/UserInfos'
+import GameModeSelection from './components/GameModeSelection'
+
 import styles from './styles/appStyles.module.scss'
+import sideBarStyles from './styles/sideBarStyles.module.scss'
 
 export default function App() {
   return (
@@ -13,7 +18,13 @@ export default function App() {
           </header>
           <RouterProvider router={BoardRouter} />
         </div>
-        <AsideMenu />
+
+        <aside className={sideBarStyles.menuContainer}>
+          <GameModeSelection/>
+          <Raking/>
+          <UserInfos/>
+        </aside>
+
       </div>
     </div>
   )

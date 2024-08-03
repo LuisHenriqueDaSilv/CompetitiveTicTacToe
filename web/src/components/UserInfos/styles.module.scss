@@ -30,4 +30,21 @@
       margin-left: auto;
     }
   }
+
+  .authContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+
+    button {
+      background-color: var(--green);
+      padding: 1rem;
+      border-radius: 10px;
+      border: none;
+      color: var(--white);
+      width: 100%;
+    }
+  }
+
 }

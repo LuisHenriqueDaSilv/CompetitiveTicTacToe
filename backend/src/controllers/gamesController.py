@@ -146,4 +146,3 @@ class GamesController():
         
     if sid in self.games_memory.players_queue:
       self.games_memory.remove_player_from_queue(sid)
-       

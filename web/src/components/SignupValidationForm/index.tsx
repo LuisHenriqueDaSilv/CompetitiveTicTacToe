@@ -6,7 +6,7 @@ import { AuthenticationContext } from "../../contexts/authenticationContext"
 import LoadingSpinner from "../LoadingSpinner"
 import styles from "./styles.module.scss"
 
-export default function ValidateArea() {
+export default function SignupValidationForm() {
 
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)]
 

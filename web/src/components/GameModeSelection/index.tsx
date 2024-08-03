@@ -3,13 +3,14 @@ import styles from './styles.module.scss'
 
 import { GameContext } from '../../contexts/gameContext'
 import boardRouter from '../../contexts/boardRouter'
+import {AuthenticationContext} from '../../contexts/authenticationContext'
 
-export default function GameModeMenu() {
+export default function GameModeSelection() {
 
   const { setGamemode, gamemode } = useContext(GameContext)
+  const { authenticated } = useContext(AuthenticationContext)
 
   function handleChangeGameMode(nextGamemode: "algoritmo" | "multiplayer") {
-    if (nextGamemode == gamemode) return
     setGamemode(nextGamemode)
     boardRouter.navigate("/encontrar-partida")
   }
@@ -20,8 +21,12 @@ export default function GameModeMenu() {
       <button
         id={gamemode == 'multiplayer' ? styles.selectedModeButton : ""}
         onClick={() => handleChangeGameMode('multiplayer')}
+        disabled={!authenticated}
       >
         multijogador
+        {
+          !authenticated? <span>(Autentique-se para desbloquear este modo)</span>:null
+        }
       </button>
       <button
         id={gamemode == 'algoritmo' ? styles.selectedModeButton : ""}
